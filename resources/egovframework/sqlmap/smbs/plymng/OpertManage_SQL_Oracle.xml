@@ -1,0 +1,292 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="opertManageDAO">
+
+	<typeAlias alias="HashMap" type="java.util.HashMap" />
+	<typeAlias alias="OpertGroupVO" type="egovframework.ply.service.OpertGroupVO"/>
+	<typeAlias alias="UnitOpertVO" type="egovframework.ply.service.UnitOpertVO"/>
+	
+    <resultMap id="opertGroupVO" class="egovframework.ply.service.OpertGroupVO">
+    	<result property="rnum"               column="RNUM"                  columnIndex="1"/>
+        <result property="opertGroupId"       column="OPERT_GROUP_ID"        columnIndex="2"/>
+        <result property="opertGroupNm"       column="OPERT_GROUP_NM"        columnIndex="3"/>
+        <result property="opertGroupDc"       column="OPERT_GROUP_DC"        columnIndex="4"/>
+        <result property="opertGroupKindCode" column="OPERT_GROUP_KIND_CODE" columnIndex="5"/>
+        <result property="deleteAt"           column="DELETE_AT"             columnIndex="6"/>
+        <result property="crtrId"             column="CRTR_ID"               columnIndex="7"/>
+        <result property="creatDt"            column="CREAT_DT"              columnIndex="8"/>
+        <result property="updusrId"           column="UPDUSR_ID"             columnIndex="9"/>
+        <result property="updtDt"             column="UPDT_DT"               columnIndex="10"/>
+    </resultMap>	
+    
+    <resultMap id="unitOpertVO" class="egovframework.ply.service.UnitOpertVO">
+        <result property="ipAdres"               column="IP_ADRES"                 columnIndex="1"/>
+        <result property="acntId"                column="ACNT_ID"                  columnIndex="2"/>
+        <result property="prtclCode"             column="PRTCL_CODE"               columnIndex="3"/>
+        <result property="prtclNm"               column="PRTCL_NM"                 columnIndex="4"/>
+        <result property="opertGroupId"          column="OPERT_GROUP_ID"           columnIndex="5"/>
+        <result property="unitOpertId"           column="UNIT_OPERT_ID"            columnIndex="6"/>
+        <result property="opertCn"               column="OPERT_CN"                 columnIndex="7"/>
+        <result property="opertSn"               column="OPERT_SN"                 columnIndex="8"/>
+        <result property="unitOpertNm"           column="UNIT_OPERT_NM"            columnIndex="9"/>
+        <result property="unitOpertDc"           column="UNIT_OPERT_DC"            columnIndex="10"/>
+        <result property="executBfeCnfirmAt"     column="EXECUT_BFE_CNFIRM_AT"     columnIndex="11"/>
+        <result property="executBfeCnfirmResult" column="EXECUT_BFE_CNFIRM_RESULT" columnIndex="12"/>
+        <result property="deleteAt"              column="DELETE_AT"                columnIndex="13"/>
+        <result property="crtrId"                column="CRTR_ID"                  columnIndex="14"/>
+        <result property="creatDt"               column="CREAT_DT"                 columnIndex="15"/>
+        <result property="updusrId"              column="UPDUSR_ID"                columnIndex="16"/>
+        <result property="updtDt"                column="UPDT_DT"                  columnIndex="17"/>
+    </resultMap>
+    
+	<resultMap id="selectIpAdreList" class="HashMap">
+		<result property="IP_ADRES" column="IP_ADRES" />
+	</resultMap>
+	
+	<resultMap id="selectAcntList" class="HashMap">
+		<result property="ACNT_ID"    column="ACNT_ID" />
+	</resultMap>
+	
+	<resultMap id="selectPrtclList" class="HashMap">
+		<result property="PRTCL_CODE" column="PRTCL_CODE" />
+		<result property="PRTCL_NM"   column="PRTCL_NM" />
+	</resultMap>
+	
+	<resultMap id="selectOpertGroupKind" class="HashMap">
+		<result property="CODE_ID" column="CODE_ID" />
+		<result property="CODE" column="CODE" />
+		<result property="CODE_NM" column="CODE_NM" />
+	</resultMap>
+	
+	<!-- 공통코드에서 공통그룹의 종류 조회 -->
+	<select id="serverManageDAO.selectOpertGroupKind" parameterClass="HashMap" resultMap="selectOpertGroupKind">
+		  SELECT CODE_ID, CODE, CODE_NM
+		    FROM COMTCCMMNDETAILCODE
+		   WHERE CODE_ID = 'SM0005'
+		     AND USE_AT = 'Y'
+		ORDER BY CODE
+	</select>
+
+	<!-- 작업그룹 목록을 조회한다. -->
+	<select id="opertManageDAO.selectOpertGroupList" parameterClass="OpertGroupVO" resultMap="opertGroupVO">
+		SELECT *
+		  FROM (SELECT ROWNUM RNUM, ALL_LIST.*
+		          FROM (SELECT OPERT_GROUP_ID,
+		                       OPERT_GROUP_NM,
+		                       OPERT_GROUP_DC,
+		                       OPERT_GROUP_KIND_CODE,
+		                       DELETE_AT,
+		                       CRTR_ID,
+		                       CREAT_DT,
+		                       UPDUSR_ID,
+		                       UPDT_DT
+		                  FROM TB_OPERT_GROUP
+		<!-- 단일건의 작업그룹 조회 -->
+		<isNotEqual property="searchUseYn" compareValue="Y">
+			<isNotEqual prepend="WHERE" property="opertGroupId" compareValue="0">
+		                 OPERT_GROUP_ID = #opertGroupId#
+			</isNotEqual>
+		</isNotEqual>
+		<!-- 작업그룹 검색 -->    
+		<isEqual property="searchUseYn" compareValue="Y">
+			<isNotEmpty prepend="WHERE" property="opertGroupNm">
+		                 OPERT_GROUP_NM LIKE '%'||#opertGroupNm#||'%'
+			</isNotEmpty>
+		</isEqual>
+		                ORDER BY CREAT_DT DESC
+		               ) ALL_LIST)
+		<![CDATA[
+		 WHERE RNUM > #firstIndex#
+		   AND RNUM <= #firstIndex# + #recordCountPerPage#
+		]]>
+	</select>
+	
+	<!-- 작업그룹 개수를 조회한다. -->
+	<select id="opertManageDAO.selectOpertGroupListTotCnt" parameterClass="OpertGroupVO" resultClass="int">
+		SELECT COUNT (*) TOTCNT
+		  FROM TB_OPERT_GROUP
+		<isEqual property="searchUseYn" compareValue="Y">
+			<isNotEmpty prepend="WHERE" property="opertGroupNm">
+		 OPERT_GROUP_NM LIKE '%'||#opertGroupNm#||'%'
+			</isNotEmpty>
+		</isEqual>		 
+	</select>
+	
+	<!-- 작업그룹을 등록한다. -->
+	<insert id="opertManageDAO.insertOpertGroup" parameterClass="OpertGroupVO">
+		INSERT INTO TB_OPERT_GROUP (OPERT_GROUP_ID,
+		                            OPERT_GROUP_NM,
+		                            OPERT_GROUP_DC,
+		                            DELETE_AT,
+		                            OPERT_GROUP_KIND_CODE,
+		                            CRTR_ID,
+		                            CREAT_DT)
+		     VALUES (SEQ_OPERT_GROUP.NEXTVAL,
+		             #opertGroupNm#,
+		             #opertGroupDc#,
+		             'N',
+		             #opertGroupKindCode#,
+		             #crtrId#,
+		             SYSDATE)	
+	</insert>
+	
+	<!-- 작업그룹을 수정한다. -->
+	<update id="opertManageDAO.updateOpertGroup" parameterClass="OpertGroupVO">
+		UPDATE TB_OPERT_GROUP
+		   SET OPERT_GROUP_NM = #opertGroupNm#,
+		       OPERT_GROUP_DC = #opertGroupDc#,
+		       OPERT_GROUP_KIND_CODE = #opertGroupKindCode#,
+		       UPDUSR_ID = #updusrId#,
+		       UPDT_DT = SYSDATE
+		 WHERE OPERT_GROUP_ID = #opertGroupId#
+	</update>
+	
+	<!-- 작업그룹의 삭제여부를 수정한다. -->
+	<update id="opertManageDAO.deleteOpertGroup" parameterClass="OpertGroupVO">
+		UPDATE TB_OPERT_GROUP
+		   SET DELETE_AT = DECODE (NVL (DELETE_AT, 'N'), 'N', 'Y', 'N')
+		 WHERE OPERT_GROUP_ID = #opertGroupId#	
+	</update>
+	
+	<!-- 단위작업 목록을 조회한다. -->
+	<select id="opertManageDAO.selectUnitOpertList" parameterClass="UnitOpertVO" resultMap="unitOpertVO">
+		  SELECT A.IP_ADRES,
+		         A.ACNT_ID,
+		         A.PRTCL_CODE,
+		         B.CODE_NM AS PRTCL_NM,
+		         A.OPERT_GROUP_ID,
+		         A.UNIT_OPERT_ID,
+		         A.OPERT_CN,
+		         A.OPERT_SN,
+		         A.UNIT_OPERT_NM,
+		         A.UNIT_OPERT_DC,
+		         NVL(A.EXECUT_BFE_CNFIRM_AT, 'N') AS EXECUT_BFE_CNFIRM_AT,
+		         A.EXECUT_BFE_CNFIRM_RESULT,
+		         NVL(A.DELETE_AT, 'N') AS DELETE_AT,
+		         A.CRTR_ID,
+		         A.CREAT_DT,
+		         A.UPDUSR_ID,
+		         A.UPDT_DT
+		    FROM TB_UNIT_OPERT A, COMTCCMMNDETAILCODE B
+		   WHERE B.CODE_ID(+) = 'SM0002'
+		     AND B.USE_AT(+) = 'Y'
+		     AND A.PRTCL_CODE = B.CODE(+)
+		     AND A.OPERT_GROUP_ID = #opertGroupId#
+		<isNotEqual prepend="AND" property="unitOpertId" compareValue="0">
+		         A.UNIT_OPERT_ID = #unitOpertId#
+		</isNotEqual>		
+		ORDER BY A.OPERT_SN
+	</select>
+	
+	<!-- 단위작업 순번이 있는지 조회한다. -->
+	<select id="opertManageDAO.selectUnitOpertSnCnt" parameterClass="UnitOpertVO" resultClass="int">
+			SELECT COUNT (*) CNT
+			  FROM TB_UNIT_OPERT
+			 WHERE OPERT_GROUP_ID = #opertGroupId#
+			   AND OPERT_SN = #opertSn#	
+	</select>	
+	
+	<!-- 단위작업 MAX 값 조회한다. -->
+	<select id="opertManageDAO.selectUnitOpertSnMaxVal" parameterClass="UnitOpertVO" resultClass="int">
+			SELECT MAX (OPERT_SN) MX
+			  FROM TB_UNIT_OPERT
+			 WHERE OPERT_GROUP_ID = #opertGroupId#
+	</select>	
+	
+	<!-- 단위작업 순번 MAX + 1 값 조회-->
+	<select id="opertManageDAO.selectUnitOpertSnMax" parameterClass="UnitOpertVO" resultClass="int">
+			SELECT MAX (OPERT_SN) + 1 OPERT_SN
+			  FROM TB_UNIT_OPERT
+			 WHERE OPERT_GROUP_ID = #opertGroupId#
+	</select>	
+	
+	<!-- 단위작업을 입력한다. -->
+	<insert id="opertManageDAO.insertUnitOpert" parameterClass="UnitOpertVO">
+		INSERT INTO TB_UNIT_OPERT (IP_ADRES,
+		                           ACNT_ID,
+		                           PRTCL_CODE,
+		                           OPERT_GROUP_ID,
+		                           UNIT_OPERT_ID,
+		                           OPERT_CN,
+		                           OPERT_SN,
+		                           UNIT_OPERT_NM,
+		                           UNIT_OPERT_DC,
+		                           EXECUT_BFE_CNFIRM_AT,
+		                           EXECUT_BFE_CNFIRM_RESULT,
+		                           DELETE_AT,
+		                           CRTR_ID,
+		                           CREAT_DT)
+		     VALUES (#ipAdres#,
+		             #acntId#,
+		             #prtclCode#,
+		             #opertGroupId#,
+		             SEQ_UNIT_OPERT.NEXTVAL,
+		             #opertCn#,
+		             #opertSn#,
+		             #unitOpertNm#,
+		             #unitOpertDc#,
+		             NVL(#executBfeCnfirmAt#, 'N'),
+		             'N',
+		             'N',
+		             #crtrId#,
+		             SYSDATE)	
+	</insert>
+	
+	<!-- 단위작업을 수정한다. -->
+	<update id="opertManageDAO.updateUnitOpert" parameterClass="UnitOpertVO">
+		UPDATE TB_UNIT_OPERT
+		   SET OPERT_CN = #opertCn#,
+		       OPERT_SN = #opertSn#,
+		       UNIT_OPERT_NM = #unitOpertNm#,
+		       UNIT_OPERT_DC = #unitOpertDc#,
+		       EXECUT_BFE_CNFIRM_AT = #executBfeCnfirmAt#,
+		       UPDUSR_ID = #updusrId#,
+		       UPDT_DT = SYSDATE
+		 WHERE IP_ADRES = #ipAdres#
+		   AND ACNT_ID = #acntId#
+		   AND PRTCL_CODE = #prtclCode#
+		   AND OPERT_GROUP_ID = #opertGroupId#
+		   AND UNIT_OPERT_ID = #unitOpertId#
+	</update>
+	
+	<!-- 단위작업의 삭제여부를 수정한다. -->
+	<update id="opertManageDAO.deleteUnitOpert" parameterClass="UnitOpertVO">
+		UPDATE TB_UNIT_OPERT
+		   SET DELETE_AT = DECODE (NVL (DELETE_AT, 'N'), 'N', 'Y', 'N')
+		 WHERE IP_ADRES = #ipAdres#
+		   AND ACNT_ID = #acntId#
+		   AND PRTCL_CODE = #prtclCode#
+		   AND OPERT_GROUP_ID = #opertGroupId#
+		   AND UNIT_OPERT_ID = #unitOpertId#
+	</update>	
+
+	<!-- IP 목록을 조회한다. -->
+	<select id="opertManageDAO.selectIpAdresList" resultMap="selectIpAdreList">
+		  SELECT IP_ADRES
+		    FROM TB_SERVER
+		   WHERE NVL (DELETE_AT, 'N') <![CDATA[<>]]> 'Y'
+		ORDER BY IP_ADRES	
+	</select>
+	
+	<!-- 계정 목록을 조회한다. -->
+	<select id="opertManageDAO.selectAcntList" parameterClass="HashMap" resultMap="selectAcntList">
+		SELECT DISTINCT A.ACNT_ID
+		  FROM TB_ACNT A
+		 WHERE NVL (A.DELETE_AT, 'N') <![CDATA[<>]]> 'Y'
+		   AND A.IP_ADRES = #ipAdres#
+		ORDER BY A.ACNT_ID
+	</select>
+	
+	<!-- 프로토콜 목록을 조회한다. -->
+	<select id="opertManageDAO.selectPrtclList" parameterClass="HashMap" resultMap="selectPrtclList">
+		SELECT A.PRTCL_CODE, B.CODE_NM AS PRTCL_NM
+		  FROM TB_ACNT A, COMTCCMMNDETAILCODE B
+		 WHERE B.CODE_ID(+) = 'SM0002'
+		   AND B.USE_AT(+) = 'Y'
+		   AND A.PRTCL_CODE = B.CODE(+)
+		   AND NVL (A.DELETE_AT, 'N') <![CDATA[<>]]> 'Y'
+		   AND A.IP_ADRES = #ipAdres#
+		   AND A.ACNT_ID = #acntId#
+	</select>	
+</sqlMap>

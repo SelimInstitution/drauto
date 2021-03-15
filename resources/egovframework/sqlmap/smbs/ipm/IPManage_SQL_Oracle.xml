@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="IPManageDAO">
+	<typeAlias  alias="EgovMap"      type = "egovframework.rte.psl.dataaccess.util.EgovMap"/>
+	<typeAlias  alias="IPManageVO"      type = "egovframework.ipm.service.IPManageVO"/>
+	<typeAlias alias="HashMap" type="java.util.HashMap" /> 
+
+	<resultMap id="IPManageList" class="HashMap">
+	  <result property="ipAdres" column="ipAdres"/>
+	  <result property="subnetMask" column="subnetMask"/>
+	  <result property="hostNm" column="hostNm"/>
+	  <result property="eqpmnKnd" column="eqpmnKnd"/>
+	  <result property="prpos" column="prpos"/>
+	  <result property="ntwkDiv" column="ntwkDiv"/>
+	  <result property="rm" column="rm"/>
+	  <result property="creatDt" column="creatDt"/>
+	  <result property="crtrNm" column="crtrNm"/>
+	  <result property="rnum" column="rnum"/>
+	  <result property="alive" column="alive"/>
+	</resultMap>
+	
+    <select id="IPManageDAO.selectIPManageList" parameterClass="IPManageVO" resultMap="IPManageList">
+        <![CDATA[    
+            SELECT  * 
+              FROM  (
+            SELECT ROWNUM RNUM, ALL_LIST.* 
+              FROM  (
+             SELECT IP_ADRES ipAdres, SUBNET_MASK as subnetMask, HOST_NM as hostNm, ALIVE as alive, EQPMN_KND as eqpmnKnd, PRPOS as prpos, (select CODE_NM from COMTCCMMNDETAILCODE
+                where code_id='SM0003'
+                AND CODE=NTWK_DIV) as ntwkDiv, RM as rm, (SELECT MBER_NM FROM COMTNGNRLMBER
+                WHERE MBER_ID=CRTR_ID) AS crtrNm, TO_CHAR(CREAT_DT,'YYYY-MM-DD') AS creatDt FROM TB_IP
+            WHERE 1 = 1
+        ]]> 
+        <isNotEmpty prepend="AND" property="searchIpAdres">
+				IP_ADRES LIKE '%' || #searchIpAdres# || '%'	
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="searchHostNm">
+				HOST_NM LIKE  '%' || #searchHostNm# || '%'	
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="searchEqpmnKnd">
+				EQPMN_KND LIKE '%' || #searchEqpmnKnd# || '%'	
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="searchNtwkDiv">
+				NTWK_DIV LIKE '%' || #searchNtwkDiv# || '%'
+		</isNotEmpty>
+        <![CDATA[                  
+            ORDER BY IP_ADRES
+                    ) ALL_LIST
+                    )
+             WHERE  RNUM  > #firstIndex#
+               AND  RNUM <= #firstIndex# + #recordCountPerPage#
+        ]]>                  
+    </select>
+    
+    <select id="IPManageDAO.selectIPManageListTotCnt" parameterClass="IPManageVO" resultClass="java.lang.Integer">
+        <![CDATA[    
+             SELECT COUNT(IP_ADRES) 
+			 FROM TB_IP
+            WHERE 1 = 1
+        ]]> 
+        <isNotEmpty prepend="AND" property="searchIpAdres">
+				IP_ADRES LIKE '%' || #searchIpAdres# || '%'	
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="searchHostNm">
+				HOST_NM LIKE  '%' || #searchHostNm# || '%'	
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="searchEqpmnKnd">
+				EQPMN_KND LIKE '%' || #searchEqpmnKnd# || '%'	
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="searchNtwkDiv">
+				NTWK_DIV LIKE '%' || #searchNtwkDiv# || '%'
+		</isNotEmpty>
+    </select>
+    
+    <insert id="IPManageDAO.insertIPManage" parameterClass="IPManageVO">
+        INSERT INTO TB_IP 
+			  (IP_ADRES, SUBNET_MASK, HOST_NM, EQPMN_KND, PRPOS, NTWK_DIV, RM, CRTR_ID, CREAT_DT)
+		VALUES(#ipAdres#, #subnetMask#, #hostNm#, #eqpmnKnd#, #prpos#, #ntwkDiv#, #rm#, #crtrId#, SYSDATE)
+    </insert>
+    
+    <select id="IPManageDAO.modifyIPManage" parameterClass="IPManageVO" resultClass="IPManageVO">
+         SELECT IP_ADRES as ipAdres, SUBNET_MASK as subnetMask, HOST_NM as hostNm, EQPMN_KND as eqpmnKnd, PRPOS as prpos, NTWK_DIV as ntwkDiv, RM as rm FROM TB_IP
+         WHERE IP_ADRES = #ipAdres#
+         AND ROWNUM=1
+    </select>
+    
+    <update id="IPManageDAO.updateIPManage" parameterClass="IPManageVO">
+        UPDATE TB_IP SET 
+			  IP_ADRES=#ipAdres#, SUBNET_MASK=#subnetMask#, HOST_NM=#hostNm#, EQPMN_KND=#eqpmnKnd#, PRPOS=#prpos#, NTWK_DIV=#ntwkDiv#, RM=#rm#,
+			  UPDUSR_ID = #updusrId#, UPDT_DT = SYSDATE
+		WHERE IP_ADRES = #ipAdres#
+    </update>
+    <delete id="IPManageDAO.deleteIPManage" parameterClass="IPManageVO">
+        DELETE FROM TB_IP
+		WHERE IP_ADRES = #ipAdres#
+    </delete>
+    
+    <select id="IPManageDAO.overlapIP" parameterClass="IPManageVO" resultClass="String">
+         SELECT DECODE(COUNT(IP_ADRES),0,'N','Y') AS IPADRES
+         FROM TB_IP
+         WHERE IP_ADRES = #ipAdres#
+         AND ROWNUM=1
+    </select>
+    
+    <select id="IPManageDAO.selectDivCode" resultClass="EgovMap">
+        SELECT CODE, CODE_NM  FROM COMTCCMMNDETAILCODE
+	    WHERE CODE_ID='SM0003'
+	    ORDER BY CODE
+    </select>
+
+	<resultMap id="ipAdres" class="HashMap">
+	  <result property="IP_ADRES"            	column="IP_ADRES"/>
+	</resultMap>		
+	<select id="IPManageDAO.selectIpPingList" parameterClass="HashMap" resultMap="ipAdres">	
+		SELECT IP_ADRES
+		FROM TB_IP 
+		ORDER BY IP_ADRES
+	</select>
+
+	<update id="IPManageDAO.updateAlive" parameterClass="HashMap">
+		UPDATE TB_IP
+		   SET ALIVE = #ALIVE#
+		 WHERE IP_ADRES = #IP_ADRES#	
+	</update>
+
+	<update id="IPManageDAO.updateAliveClear" parameterClass="HashMap">
+		UPDATE TB_IP
+		   SET ALIVE = ''
+	</update>
+
+</sqlMap>

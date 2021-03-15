@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="serverManageDAO">
+
+	<typeAlias alias="HashMap" type="java.util.HashMap" />
+	<typeAlias alias="ServerVO" type="egovframework.server.service.ServerVO"/>
+	<typeAlias alias="AcntVO" type="egovframework.server.service.AcntVO"/>
+	
+    <resultMap id="serverVO" class="egovframework.server.service.ServerVO">
+    	<result property="rnum"     column="RNUM"      columnIndex="1"/>
+        <result property="ipAdres"  column="IP_ADRES"  columnIndex="2"/>
+        <result property="hostNm"   column="HOST_NM"   columnIndex="3"/>
+        <result property="eqpmnNm"  column="EQPMN_NM"  columnIndex="4"/>
+        <result property="eqpmnDc"  column="EQPMN_DC"  columnIndex="5"/>
+        <result property="osCode"   column="OS_CODE"   columnIndex="6"/>
+        <result property="osNm"     column="OS_NM"     columnIndex="7"/>
+        <result property="osVer"    column="OS_VER"    columnIndex="8"/>
+        <result property="krnlVer"  column="KRNL_VER"  columnIndex="9"/>
+        <result property="deleteAt" column="DELETE_AT" columnIndex="10"/>
+    </resultMap>	
+    
+    <resultMap id="acntVO" class="egovframework.server.service.AcntVO">
+        <result property="rnum"      column="RNUM"       columnIndex="1"/>
+        <result property="ipAdres"   column="IP_ADRES"   columnIndex="2"/>
+        <result property="acntId"    column="ACNT_ID"    columnIndex="3"/>
+        <result property="prtclCode" column="PRTCL_CODE" columnIndex="4"/>
+        <result property="prtclNm"   column="PRTCL_NM"   columnIndex="5"/>
+        <result property="port"      column="PORT"       columnIndex="6"/>
+        <result property="password"  column="PASSWORD"   columnIndex="7"/>
+        <result property="prompt"    column="PROMPT"     columnIndex="8"/>
+        <result property="deleteAt"  column="DELETE_AT"  columnIndex="9"/>
+        <result property="dc"        column="DC"         columnIndex="10"/>
+    </resultMap>    
+
+	<resultMap id="selectOS" class="HashMap">
+		<result property="CODE_ID" column="CODE_ID" />
+		<result property="CODE" column="CODE" />
+		<result property="CODE_NM" column="CODE_NM" />
+	</resultMap>
+	
+	<resultMap id="selectIP" class="HashMap">
+		<result property="IP_ADRES" column="IP_ADRES" />
+	</resultMap>	
+	
+	<!-- 공통코드에서 OS의 종류 조회 -->
+	<select id="serverManageDAO.selectOS" parameterClass="HashMap" resultMap="selectOS">
+		  SELECT CODE_ID, CODE, CODE_NM
+		    FROM COMTCCMMNDETAILCODE
+		   WHERE CODE_ID = 'SM0001'
+		     AND USE_AT = 'Y'
+		ORDER BY CODE
+	</select>
+	
+	<!-- 공통코드에서 프로토콜의 종류 조회 -->
+	<select id="serverManageDAO.selectPrtcl" parameterClass="HashMap" resultMap="selectOS">
+		  SELECT CODE_ID, CODE, CODE_NM
+		    FROM COMTCCMMNDETAILCODE
+		   WHERE CODE_ID = 'SM0002'
+		     AND USE_AT = 'Y'
+		ORDER BY CODE
+	</select>	
+	
+	<!-- 서버목록에서 IP를 조회한다. -->
+	<select id="serverManageDAO.selectIP" parameterClass="ServerVO" resultMap="selectIP">
+		SELECT IP_ADRES
+		  FROM TB_SERVER
+		 WHERE IP_ADRES = #ipAdres#
+	</select>	
+	
+	<!-- 서버 목록을 조회한다. -->
+	<select id="serverManageDAO.selectServerList" parameterClass="ServerVO" resultMap="serverVO">
+		SELECT *
+		  FROM (SELECT ROWNUM RNUM, ALL_LIST.*
+		          FROM (  SELECT A.IP_ADRES,
+		                         A.HOST_NM,
+		                         A.EQPMN_NM,
+		                         A.EQPMN_DC,
+		                         A.OS_CODE,
+		                         B.CODE_NM AS OS_NM,
+		                         A.OS_VER,
+		                         A.KRNL_VER,
+		                         NVL (A.DELETE_AT, 'N') DELETE_AT
+		                    FROM TB_SERVER A, COMTCCMMNDETAILCODE B
+		                   WHERE 1 = 1
+		                     AND B.CODE_ID(+) = 'SM0001'
+		                     AND B.USE_AT(+) = 'Y'
+		                     AND A.OS_CODE = B.CODE(+)
+		<isNotEqual property="searchUseYn" compareValue="Y">		                     
+			<isNotEmpty prepend="AND" property="ipAdres">
+		     IP_ADRES = #ipAdres#
+			</isNotEmpty>
+		</isNotEqual>
+		
+		<isEqual property="searchUseYn" compareValue="Y">
+			<isNotEmpty prepend="AND" property="ipAdres">
+		     IP_ADRES LIKE '%'||#ipAdres#||'%'
+		    </isNotEmpty>
+		</isEqual>
+		<isEqual property="searchUseYn" compareValue="Y">
+			<isNotEmpty prepend="AND" property="hostNm">
+		     HOST_NM LIKE '%'||#hostNm#||'%'
+		    </isNotEmpty>
+		</isEqual>
+		<isEqual property="searchUseYn" compareValue="Y">
+			<isNotEmpty prepend="AND" property="osCode">
+		     OS_CODE LIKE '%'||#osCode#||'%'
+		    </isNotEmpty>
+		</isEqual>
+		                ORDER BY A.IP_ADRES) ALL_LIST)
+	<![CDATA[
+		 WHERE RNUM > #firstIndex#
+		   AND RNUM <= #firstIndex# + #recordCountPerPage#
+	]]>
+	</select>	
+		
+	<!-- 서버 목록 개수를 조회한다. -->
+	<select id="serverManageDAO.selectServerListTotCnt" parameterClass="ServerVO" resultClass="int">
+		SELECT COUNT (*) TOTCNT
+		  FROM TB_SERVER A, COMTCCMMNDETAILCODE B
+		 WHERE 1 = 1
+		   AND B.CODE_ID(+) = 'SM0001'
+		   AND B.USE_AT(+) = 'Y'
+		   AND A.OS_CODE = B.CODE(+)
+		<isEqual property="searchUseYn" compareValue="Y">
+			<isNotEmpty prepend="AND" property="ipAdres">
+		     IP_ADRES LIKE '%'||#ipAdres#||'%'
+		    </isNotEmpty>
+		</isEqual>
+		<isEqual property="searchUseYn" compareValue="Y">
+			<isNotEmpty prepend="AND" property="hostNm">
+		     HOST_NM LIKE '%'||#hostNm#||'%'
+		    </isNotEmpty>
+		</isEqual>
+		<isEqual property="searchUseYn" compareValue="Y">
+			<isNotEmpty prepend="AND" property="osCode">
+		     OS_CODE LIKE '%'||#osCode#||'%'
+		    </isNotEmpty>
+		</isEqual>	   
+	</select>		
+	
+	<!-- 서버정보를 저장한다. -->
+	<insert id="serverManageDAO.insertServer" parameterClass="ServerVO">
+		INSERT INTO TB_SERVER (IP_ADRES,
+		                       HOST_NM,
+		                       EQPMN_NM,
+		                       EQPMN_DC,
+		                       OS_CODE,
+		                       OS_VER,
+		                       KRNL_VER)
+		     VALUES (#ipAdres#,
+		             #hostNm#,
+		             #eqpmnNm#,
+		             #eqpmnDc#,
+		             #osCode#,
+		             #osVer#,
+		             #krnlVer#)	
+	</insert>
+	
+	<!-- 서버정보를 수정한다. -->
+	<update id="serverManageDAO.updateServer" parameterClass="ServerVO">
+		UPDATE TB_SERVER
+		   SET HOST_NM = #hostNm#,
+		       EQPMN_NM = #eqpmnNm#,
+		       EQPMN_DC = #eqpmnDc#,
+		       OS_CODE = #osCode#,
+		       OS_VER = #osVer#,
+		       KRNL_VER = #krnlVer#
+		 WHERE IP_ADRES = #ipAdres#	
+	</update>
+	
+	<!-- 서버의 삭제여부를 수정한다. -->
+	<update id="serverManageDAO.updateServerDeleteAt" parameterClass="ServerVO">
+		UPDATE TB_SERVER
+		   SET DELETE_AT = DECODE (NVL (DELETE_AT, 'N'), 'N', 'Y', 'N')
+		 WHERE IP_ADRES = #ipAdres#
+	</update>
+	
+	<!-- 계정정보를 등록한다. -->
+	<insert id="serverManageDAO.insertAcnt" parameterClass="AcntVO">
+		INSERT INTO TB_ACNT (IP_ADRES,
+		                     ACNT_ID,
+		                     PRTCL_CODE,
+		                     PORT,
+		                     PASSWORD,
+		                     PROMPT,
+		                     DELETE_AT,
+		                     DC)
+		     VALUES (#ipAdres#,
+		             #acntId#,
+		             #prtclCode#,
+		             #port#,
+		             #password#,
+		             #prompt#,
+		             #deleteAt#,
+		             #dc#)	
+	</insert>
+	
+	<!-- 계정 정보를 수정한다. -->
+	<update id="serverManageDAO.updateAcnt" parameterClass="AcntVO">
+		UPDATE TB_ACNT
+		   SET PORT = #port#,
+		       PASSWORD = #password#,
+		       PROMPT = #prompt#,
+		       DC = #dc#
+		 WHERE IP_ADRES = #ipAdres#
+		   AND ACNT_ID = #acntId#
+		   AND PRTCL_CODE = #prtclCode#	
+	</update>
+	
+	<!-- 계정의 삭제여부를 수정한다. -->
+	<update id="serverManageDAO.updateAcntDeleteAt" parameterClass="AcntVO">
+		UPDATE TB_ACNT
+		   SET DELETE_AT = DECODE (NVL (DELETE_AT, 'N'), 'N', 'Y', 'N')
+		 WHERE IP_ADRES = #ipAdres#
+		   AND ACNT_ID = #acntId#
+		   AND PRTCL_CODE = #prtclCode#
+	</update>
+	
+	<!-- 계정 정보를 조회한다. -->
+	<select id="serverManageDAO.selectAcntList" parameterClass="AcntVO" resultMap="acntVO">
+	        SELECT ROWNUM RNUM, ALL_LIST.*
+	          FROM (  SELECT A.IP_ADRES,
+	                         A.ACNT_ID,
+	                         A.PRTCL_CODE,
+	                         B.CODE_NM AS PRTCL_NM,
+	                         A.PORT,
+	                         A.PASSWORD,
+	                         A.PROMPT,
+	                         NVL (A.DELETE_AT, 'N') DELETE_AT,
+	                         A.DC
+	                    FROM TB_ACNT A, COMTCCMMNDETAILCODE B
+	                   WHERE B.CODE_ID(+) = 'SM0002'
+	                     AND B.USE_AT(+) = 'Y'
+	                     AND A.PRTCL_CODE = B.CODE(+)
+		<isNotEmpty prepend="AND" property="ipAdres">		   
+		   IP_ADRES = #ipAdres#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="acntId">   
+		   ACNT_ID = #acntId#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="prtclCode">
+		   PRTCL_CODE = #prtclCode#	
+		</isNotEmpty>
+	                ORDER BY A.IP_ADRES, ACNT_ID, PRTCL_CODE) ALL_LIST
+	</select>
+	
+	<!-- 계정 목록 개수를 조회한다. -->
+	<select id="serverManageDAO.selectAcntListTotCnt" parameterClass="AcntVO" resultClass="int">
+		SELECT COUNT (*) TOTCNT
+		  FROM TB_ACNT A, COMTCCMMNDETAILCODE B
+		 WHERE B.CODE_ID(+) = 'SM0002'
+		   AND B.USE_AT(+) = 'Y'
+		   AND A.PRTCL_CODE = B.CODE(+)
+		<isNotEmpty prepend="AND" property="ipAdres">		   
+		   IP_ADRES = #ipAdres#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="acntId">   
+		   ACNT_ID = #acntId#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="prtclCode">
+		   PRTCL_CODE = #prtclCode#	
+		</isNotEmpty>
+	</select>
+</sqlMap>

@@ -1,0 +1,614 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="dsstrRecovryManageDAO">
+
+	<typeAlias alias="HashMap" type="java.util.HashMap" /> 
+	<typeAlias alias="DsstrRecovryOpertVO" type="egovframework.dr.service.DsstrRecovryOpertVO"/>
+
+    <resultMap id="dsstrRecovryOpertVO" class="egovframework.dr.service.DsstrRecovryOpertVO">
+        <result property="opertDiv"     column="OPERT_DIV"      columnIndex="1"/>
+        <result property="opertTyCode"  column="OPERT_TY_CODE"  columnIndex="2"/>
+        <result property="opertOdr"     column="OPERT_ODR"      columnIndex="3"/>
+        <result property="opertGroupId" column="OPERT_GROUP_ID" columnIndex="4"/>
+        <result property="unitOpertId"  column="UNIT_OPERT_ID"  columnIndex="5"/>
+        <result property="executDt"     column="EXECUT_DT"      columnIndex="6"/>
+        <result property="endDt"        column="END_DT"         columnIndex="7"/>
+        <result property="errorAt"      column="ERROR_AT"       columnIndex="8"/>
+        <result property="errorCn"      column="ERROR_CN"       columnIndex="9"/>
+        <result property="creatDt"      column="CREAT_DT"       columnIndex="10"/>
+        <result property="crtrId"       column="CRTR_ID"        columnIndex="11"/>
+        <result property="opertSttus"   column="OPERT_STTUS"    columnIndex="12"/>
+        <result property="hostNm"       column="HOST_NM"        columnIndex="13"/>
+        <result property="ipAdres"      column="IP_ADRES"       columnIndex="14"/>
+        <result property="eqpmnNm"      column="IP_ADRES"       columnIndex="15"/>
+        <result property="unitOpertNm"  column="UNIT_OPERT_NM"  columnIndex="16"/>
+    </resultMap>
+    
+	<resultMap id="selectOpertOdrList" class="HashMap">
+		<result property="OPERT_ODR" column="OPERT_ODR" />
+	</resultMap>  
+
+	
+	<!-- 재해복구 작업의 차수 목록을 조회한다. -->
+	<select id="dsstrRecovryManageDAO.selectOpertOdrList" parameterClass="DsstrRecovryOpertVO" resultMap="selectOpertOdrList">
+		  SELECT DISTINCT OPERT_ODR AS OPERT_ODR
+		    FROM TB_DSSTR_RECOVRY_OPERT
+		   WHERE OPERT_DIV = #opertDiv#
+		     AND OPERT_TY_CODE = #opertTyCode#
+		ORDER BY OPERT_ODR DESC
+	</select>
+	
+	<!-- 재해복구 작업의 차수를 추가 한다. -->
+	<insert id="dsstrRecovryManageDAO.insertOpertOdr" parameterClass="DsstrRecovryOpertVO">
+		INSERT INTO TB_DSSTR_RECOVRY_OPERT (OPERT_DIV,
+		                                    OPERT_TY_CODE,
+		                                    OPERT_ODR,
+		                                    OPERT_GROUP_ID,
+		                                    UNIT_OPERT_ID,
+		                                    CREAT_DT,
+		                                    CRTR_ID)
+		     SELECT #opertDiv#,
+		            #opertTyCode#,
+		            NVL ( (SELECT MAX (OPERT_ODR) + 1
+                             FROM TB_DSSTR_RECOVRY_OPERT
+                            WHERE OPERT_DIV = #opertDiv#
+                              AND OPERT_TY_CODE = #opertTyCode#),
+                         1),
+		            A.OPERT_GROUP_ID,
+		            NVL(B.UNIT_OPERT_ID, -1),
+		            SYSDATE,
+		            #crtrId#
+		       FROM TB_OPERT_GROUP A, TB_UNIT_OPERT B
+		      WHERE A.OPERT_GROUP_ID = B.OPERT_GROUP_ID(+)
+		<isEqual property="opertTyCode" compareValue="DR0001">
+		        AND A.OPERT_GROUP_ID BETWEEN '1' AND '25'
+		</isEqual>
+		<isEqual property="opertTyCode" compareValue="DR0002">
+		        AND A.OPERT_GROUP_ID BETWEEN '26' AND '50'
+		</isEqual>		      
+		        AND NVL (A.DELETE_AT, 'N') <![CDATA[<>]]> 'Y'
+		        AND NVL (B.DELETE_AT, 'N') <![CDATA[<>]]> 'Y'
+		   ORDER BY A.OPERT_GROUP_ID, B.UNIT_OPERT_ID
+	</insert>
+	
+	<!-- 재해복구 작업의 마지막 차수를 조회한다. -->
+	<select id="dsstrRecovryManageDAO.selectMaxOpertOdr" parameterClass="DsstrRecovryOpertVO" resultClass="int">
+		SELECT NVL (MAX (OPERT_ODR), 0) AS OPERT_ODR
+		  FROM TB_DSSTR_RECOVRY_OPERT
+		 WHERE OPERT_DIV = #opertDiv#
+		   AND OPERT_TY_CODE = #opertTyCode#
+	</select>
+	
+	
+	<resultMap id="selectDsstrRecovry" class="HashMap">
+		<result property="OPERT_ODR" column="OPERT_ODR" />
+		<result property="OPERT_DIV" column="OPERT_DIV" />
+		<result property="OPERT_TY_CODE" column="OPERT_TY_CODE" />
+		<result property="OPERT_GROUP_ID" column="OPERT_GROUP_ID" />
+		<result property="UNIT_OPERT_ID" column="UNIT_OPERT_ID" />
+		<result property="EXECUT_DT" column="EXECUT_DT" />
+		<result property="END_DT" column="END_DT" />
+		<result property="ERROR_AT" column="ERROR_AT" />
+		<result property="ERROR_CN" column="ERROR_CN" />
+		<result property="CREAT_DT" column="CREAT_DT" />
+		<result property="CRTR_ID" column="CRTR_ID" />
+		<result property="OPERT_STTUS" column="OPERT_STTUS" />
+		<result property="HOST_NM" column="HOST_NM" />
+		<result property="IP_ADRES" column="IP_ADRES" />
+		<result property="EQPMN_NM" column="EQPMN_NM" />
+		<result property="UNIT_OPERT_NM" column="UNIT_OPERT_NM" />
+		<result property="OPERT_SN" column="OPERT_SN" />
+	</resultMap>  
+	<!-- 특정 차수의 재해복구 작업 목록을 조회 한다. -->
+	<select id="dsstrRecovryManageDAO.selectDsstrRecovry" parameterClass="DsstrRecovryOpertVO" resultMap="selectDsstrRecovry">
+		  SELECT A.OPERT_ODR,
+		         A.OPERT_DIV,
+		         A.OPERT_TY_CODE,
+		         A.OPERT_GROUP_ID,
+		         A.UNIT_OPERT_ID,
+		         A.EXECUT_DT,
+		         A.END_DT,
+		         A.ERROR_AT,
+		         A.ERROR_CN,
+		         A.CREAT_DT,
+		         A.CRTR_ID,
+		         CASE
+		            WHEN NVL (ERROR_AT, 'N') = 'N'
+		            THEN
+		               CASE
+		                  WHEN EXECUT_DT IS NOT NULL
+		                   AND END_DT IS NULL
+		                  THEN
+		                     'ov_02'
+		                  WHEN EXECUT_DT IS NOT NULL
+		                   AND END_DT IS NOT NULL
+		                  THEN
+		                     'ov_03'
+		                  WHEN EXECUT_DT IS NULL
+		                   AND END_DT IS NULL
+		                  THEN
+		                     ''
+		               END
+		            ELSE
+		               'ov_04'
+		         END
+		            OPERT_STTUS,
+		         NVL(C.HOST_NM, ' ') HOST_NM,
+		         C.IP_ADRES,
+		         NVL(C.EQPMN_NM, ' ') EQPMN_NM,
+		         NVL(B.UNIT_OPERT_NM, ' ') UNIT_OPERT_NM,
+		         B.OPERT_SN
+		    FROM TB_DSSTR_RECOVRY_OPERT A, TB_UNIT_OPERT B, TB_SERVER C
+		   WHERE A.OPERT_GROUP_ID = B.OPERT_GROUP_ID
+		     AND A.UNIT_OPERT_ID = B.UNIT_OPERT_ID
+		     AND B.IP_ADRES = C.IP_ADRES
+		     AND A.OPERT_DIV = #opertDiv#
+		     AND A.OPERT_TY_CODE = #opertTyCode#
+		     AND A.OPERT_ODR = #opertOdr#
+		     AND A.OPERT_GROUP_ID = #opertGroupId#
+		ORDER BY A.OPERT_GROUP_ID, B.OPERT_SN
+	</select>
+	
+	<resultMap id="selectOpertGgroupSttus" class="HashMap">
+		<result property="OPERT_GROUP_ID" column="OPERT_GROUP_ID" />
+		<result property="OPERT_ODR" column="OPERT_ODR" />
+		<result property="OPERT_STTUS" column="OPERT_STTUS" />
+	</resultMap>  	
+	
+	<!-- 작업그룹의 상태를 조회한다. -->
+	<select id="dsstrRecovryManageDAO.selectOpertGgroupSttus" parameterClass="DsstrRecovryOpertVO" resultMap="selectOpertGgroupSttus">
+		SELECT A.OPERT_GROUP_ID,
+		       A.OPERT_ODR,
+		       CASE
+		          WHEN (SELECT COUNT (B.UNIT_OPERT_ID)
+		                  FROM TB_DSSTR_RECOVRY_OPERT B
+		                 WHERE A.OPERT_DIV = B.OPERT_DIV
+		                   AND A.OPERT_TY_CODE = B.OPERT_TY_CODE
+		                   AND A.OPERT_ODR = B.OPERT_ODR
+		                   AND A.OPERT_GROUP_ID = B.OPERT_GROUP_ID
+		                   AND NVL (B.ERROR_AT, 'N') = 'Y') > 0
+		          THEN
+		             'condition_02' <!-- 오류 -->
+		          WHEN (SELECT COUNT (B.UNIT_OPERT_ID)
+		                  FROM TB_DSSTR_RECOVRY_OPERT B
+		                 WHERE A.OPERT_DIV = B.OPERT_DIV
+		                   AND A.OPERT_TY_CODE = B.OPERT_TY_CODE
+		                   AND A.OPERT_ODR = B.OPERT_ODR
+		                   AND A.OPERT_GROUP_ID = B.OPERT_GROUP_ID
+		                   AND EXECUT_DT IS NOT NULL
+		                   AND END_DT IS NOT NULL) = A.CNT
+		          THEN
+		             'condition_01' <!-- 완료 -->
+		          WHEN (SELECT COUNT (B.UNIT_OPERT_ID)
+		                  FROM TB_DSSTR_RECOVRY_OPERT B
+		                 WHERE A.OPERT_DIV = B.OPERT_DIV
+		                   AND A.OPERT_TY_CODE = B.OPERT_TY_CODE
+		                   AND A.OPERT_ODR = B.OPERT_ODR
+		                   AND A.OPERT_GROUP_ID = B.OPERT_GROUP_ID
+		                   AND EXECUT_DT IS NULL
+		                   AND END_DT IS NULL) = A.CNT
+		          THEN
+		             '' <!-- 실행전 -->
+		          ELSE
+		             'condition_03' <!-- 실행중 -->
+		       END
+		          OPERT_STTUS
+		  FROM (  SELECT OPERT_DIV,
+		                 OPERT_TY_CODE,
+		                 OPERT_GROUP_ID,
+		                 OPERT_ODR,
+		                 COUNT (*) CNT
+		            FROM TB_DSSTR_RECOVRY_OPERT
+		           WHERE OPERT_DIV = #opertDiv#
+		             AND OPERT_TY_CODE = #opertTyCode#
+		             AND OPERT_ODR = #opertOdr#
+		        GROUP BY OPERT_DIV,
+		                 OPERT_TY_CODE,
+		                 OPERT_GROUP_ID,
+		                 OPERT_ODR
+		        ORDER BY OPERT_GROUP_ID) A
+	</select>
+	
+	<resultMap id="selectLclasSttus" class="HashMap">
+		<result property="SEQ" column="SEQ" />
+		<result property="OPERT_ODR" column="OPERT_ODR" />
+		<result property="OPERT_STTUS" column="OPERT_STTUS" />
+	</resultMap>  
+	
+	<!-- 대분류의 작업상태를 조회한다. -->
+	<select id="dsstrRecovryManageDAO.selectLclasSttus" parameterClass="DsstrRecovryOpertVO" resultMap="selectLclasSttus">
+		SELECT '1' SEQ,
+		       A.OPERT_ODR,
+		       CASE
+		          WHEN (SELECT COUNT (B.UNIT_OPERT_ID)
+		                  FROM TB_DSSTR_RECOVRY_OPERT B
+		                 WHERE A.OPERT_ODR = B.OPERT_ODR
+		<isEqual property="opertTyCode" compareValue="DR0001">
+		                   AND OPERT_GROUP_ID IN ('1', '2')
+		</isEqual>
+		<isEqual property="opertTyCode" compareValue="DR0002">
+		                   AND OPERT_GROUP_ID BETWEEN '26' AND '30'
+		</isEqual>		
+		                   AND NVL (B.ERROR_AT, 'N') = 'Y') > 0
+		          THEN
+		             'fix2'
+		          WHEN (SELECT COUNT (B.UNIT_OPERT_ID)
+		                  FROM TB_DSSTR_RECOVRY_OPERT B
+		                 WHERE A.OPERT_ODR = B.OPERT_ODR
+		<isEqual property="opertTyCode" compareValue="DR0001">
+		                   AND OPERT_GROUP_ID IN ('1', '2')
+		</isEqual>
+		<isEqual property="opertTyCode" compareValue="DR0002">
+		                   AND OPERT_GROUP_ID BETWEEN '26' AND '30'
+		</isEqual>
+		                   AND EXECUT_DT IS NOT NULL
+		                   AND END_DT IS NOT NULL) = A.CNT
+		          THEN
+		             'fix1'
+		          WHEN (SELECT COUNT (B.UNIT_OPERT_ID)
+		                  FROM TB_DSSTR_RECOVRY_OPERT B
+		                 WHERE A.OPERT_ODR = B.OPERT_ODR
+		<isEqual property="opertTyCode" compareValue="DR0001">
+		                   AND OPERT_GROUP_ID IN ('1', '2')
+		</isEqual>
+		<isEqual property="opertTyCode" compareValue="DR0002">
+		                   AND OPERT_GROUP_ID BETWEEN '26' AND '30'
+		</isEqual>
+		                   AND EXECUT_DT IS NULL
+		                   AND END_DT IS NULL) = A.CNT
+		          THEN
+		             'fix0'		             
+		          ELSE
+		             'fix3'
+		       END
+		          OPERT_STTUS
+		  FROM (  SELECT OPERT_ODR, COUNT (*) CNT
+		            FROM TB_DSSTR_RECOVRY_OPERT
+		           WHERE OPERT_ODR = #opertOdr#
+		<isEqual property="opertTyCode" compareValue="DR0001">
+                     AND OPERT_GROUP_ID IN ('1', '2')
+		</isEqual>
+		<isEqual property="opertTyCode" compareValue="DR0002">
+                     AND OPERT_GROUP_ID BETWEEN '26' AND '30'
+		</isEqual>
+		        GROUP BY OPERT_ODR) A
+		UNION ALL
+		SELECT '2',
+		       A.OPERT_ODR,
+		       CASE
+		          WHEN (SELECT COUNT (B.UNIT_OPERT_ID)
+		                  FROM TB_DSSTR_RECOVRY_OPERT B
+		                 WHERE A.OPERT_ODR = B.OPERT_ODR
+		<isEqual property="opertTyCode" compareValue="DR0001">
+		                   AND OPERT_GROUP_ID = '3'
+		</isEqual>
+		<isEqual property="opertTyCode" compareValue="DR0002">
+		                   AND OPERT_GROUP_ID BETWEEN '31' AND '33'
+		</isEqual>
+		                   AND NVL (B.ERROR_AT, 'N') = 'Y') > 0
+		          THEN
+		             'fix2'
+		          WHEN (SELECT COUNT (B.UNIT_OPERT_ID)
+		                  FROM TB_DSSTR_RECOVRY_OPERT B
+		                 WHERE A.OPERT_ODR = B.OPERT_ODR
+		<isEqual property="opertTyCode" compareValue="DR0001">
+		                   AND OPERT_GROUP_ID = '3'
+		</isEqual>
+		<isEqual property="opertTyCode" compareValue="DR0002">
+		                   AND OPERT_GROUP_ID BETWEEN '31' AND '33'
+		</isEqual>
+		                   AND EXECUT_DT IS NOT NULL
+		                   AND END_DT IS NOT NULL) = A.CNT
+		          THEN
+		             'fix1'
+		          WHEN (SELECT COUNT (B.UNIT_OPERT_ID)
+		                  FROM TB_DSSTR_RECOVRY_OPERT B
+		                 WHERE A.OPERT_ODR = B.OPERT_ODR
+		<isEqual property="opertTyCode" compareValue="DR0001">
+		                   AND OPERT_GROUP_ID = '3'
+		</isEqual>
+		<isEqual property="opertTyCode" compareValue="DR0002">
+		                   AND OPERT_GROUP_ID BETWEEN '31' AND '33'
+		</isEqual>
+		                   AND EXECUT_DT IS NULL
+		                   AND END_DT IS NULL) = A.CNT
+		          THEN
+		             'fix0'		             
+		          ELSE
+		             'fix3'
+		       END
+		          OPERT_STTUS
+		  FROM (  SELECT OPERT_ODR, COUNT (*) CNT
+		            FROM TB_DSSTR_RECOVRY_OPERT
+		           WHERE OPERT_ODR = #opertOdr#
+		<isEqual property="opertTyCode" compareValue="DR0001">
+		             AND OPERT_GROUP_ID = '3'
+		</isEqual>
+		<isEqual property="opertTyCode" compareValue="DR0002">
+		             AND OPERT_GROUP_ID BETWEEN '31' AND '33'
+		</isEqual>
+		        GROUP BY OPERT_ODR) A
+		UNION ALL
+		SELECT '3',
+		       A.OPERT_ODR,
+		       CASE
+		          WHEN (SELECT COUNT (B.UNIT_OPERT_ID)
+		                  FROM TB_DSSTR_RECOVRY_OPERT B
+		                 WHERE A.OPERT_ODR = B.OPERT_ODR
+		<isEqual property="opertTyCode" compareValue="DR0001">
+                           AND OPERT_GROUP_ID BETWEEN '4' AND '10'
+		</isEqual>
+		<isEqual property="opertTyCode" compareValue="DR0002">
+                           AND OPERT_GROUP_ID BETWEEN '34' AND '38'
+		</isEqual>		                 
+		                   AND NVL (B.ERROR_AT, 'N') = 'Y') > 0
+		          THEN
+		             'fix2'
+		          WHEN (SELECT COUNT (B.UNIT_OPERT_ID)
+		                  FROM TB_DSSTR_RECOVRY_OPERT B
+		                 WHERE A.OPERT_ODR = B.OPERT_ODR
+		<isEqual property="opertTyCode" compareValue="DR0001">
+                           AND OPERT_GROUP_ID BETWEEN '4' AND '10'
+		</isEqual>
+		<isEqual property="opertTyCode" compareValue="DR0002">
+                           AND OPERT_GROUP_ID BETWEEN '34' AND '38'
+		</isEqual>	
+		                   AND EXECUT_DT IS NOT NULL
+		                   AND END_DT IS NOT NULL) = A.CNT
+		          THEN
+		             'fix1'
+		          WHEN (SELECT COUNT (B.UNIT_OPERT_ID)
+		                  FROM TB_DSSTR_RECOVRY_OPERT B
+		                 WHERE A.OPERT_ODR = B.OPERT_ODR
+		<isEqual property="opertTyCode" compareValue="DR0001">
+                           AND OPERT_GROUP_ID BETWEEN '4' AND '10'
+		</isEqual>
+		<isEqual property="opertTyCode" compareValue="DR0002">
+                           AND OPERT_GROUP_ID BETWEEN '34' AND '38'
+		</isEqual>	
+		                   AND EXECUT_DT IS NULL
+		                   AND END_DT IS NULL) = A.CNT
+		          THEN
+		             'fix0'		             
+		          ELSE
+		             'fix3'
+		       END
+		          OPERT_STTUS
+		  FROM (  SELECT OPERT_ODR, COUNT (*) CNT
+		            FROM TB_DSSTR_RECOVRY_OPERT
+		           WHERE OPERT_ODR = #opertOdr#
+		<isEqual property="opertTyCode" compareValue="DR0001">
+                     AND OPERT_GROUP_ID BETWEEN '4' AND '10'
+		</isEqual>
+		<isEqual property="opertTyCode" compareValue="DR0002">
+                     AND OPERT_GROUP_ID BETWEEN '34' AND '38'
+		</isEqual>	
+		        GROUP BY OPERT_ODR) A
+		UNION ALL
+		SELECT '4',
+		       A.OPERT_ODR,
+		       CASE
+		          WHEN (SELECT COUNT (B.UNIT_OPERT_ID)
+		                  FROM TB_DSSTR_RECOVRY_OPERT B
+		                 WHERE A.OPERT_ODR = B.OPERT_ODR
+		<isEqual property="opertTyCode" compareValue="DR0001">
+                           AND OPERT_GROUP_ID BETWEEN '11' AND '12'
+		</isEqual>
+		<isEqual property="opertTyCode" compareValue="DR0002">
+                           AND OPERT_GROUP_ID BETWEEN '39' AND '40'
+		</isEqual>			                 
+		                   AND NVL (B.ERROR_AT, 'N') = 'Y') > 0
+		          THEN
+		             'fix2'
+		          WHEN (SELECT COUNT (B.UNIT_OPERT_ID)
+		                  FROM TB_DSSTR_RECOVRY_OPERT B
+		                 WHERE A.OPERT_ODR = B.OPERT_ODR
+		<isEqual property="opertTyCode" compareValue="DR0001">
+                           AND OPERT_GROUP_ID BETWEEN '11' AND '12'
+		</isEqual>
+		<isEqual property="opertTyCode" compareValue="DR0002">
+                           AND OPERT_GROUP_ID BETWEEN '39' AND '40'
+		</isEqual>
+		                   AND EXECUT_DT IS NOT NULL
+		                   AND END_DT IS NOT NULL) = A.CNT
+		          THEN
+		             'fix1'
+		          WHEN (SELECT COUNT (B.UNIT_OPERT_ID)
+		                  FROM TB_DSSTR_RECOVRY_OPERT B
+		                 WHERE A.OPERT_ODR = B.OPERT_ODR
+		<isEqual property="opertTyCode" compareValue="DR0001">
+                           AND OPERT_GROUP_ID BETWEEN '11' AND '12'
+		</isEqual>
+		<isEqual property="opertTyCode" compareValue="DR0002">
+                           AND OPERT_GROUP_ID BETWEEN '39' AND '40'
+		</isEqual>
+		                   AND EXECUT_DT IS NULL
+		                   AND END_DT IS NULL) = A.CNT
+		          THEN
+		             'fix0'		             
+		          ELSE
+		             'fix3'
+		       END
+		          OPERT_STTUS
+		  FROM (  SELECT OPERT_ODR, COUNT (*) CNT
+		            FROM TB_DSSTR_RECOVRY_OPERT
+		           WHERE OPERT_ODR = #opertOdr#
+		<isEqual property="opertTyCode" compareValue="DR0001">
+                     AND OPERT_GROUP_ID BETWEEN '11' AND '12'
+		</isEqual>
+		<isEqual property="opertTyCode" compareValue="DR0002">
+                     AND OPERT_GROUP_ID BETWEEN '39' AND '40'
+		</isEqual>
+		        GROUP BY OPERT_ODR) A
+		UNION ALL
+		SELECT '5',
+		       A.OPERT_ODR,
+		       CASE
+		          WHEN (SELECT COUNT (B.UNIT_OPERT_ID)
+		                  FROM TB_DSSTR_RECOVRY_OPERT B
+		                 WHERE A.OPERT_ODR = B.OPERT_ODR
+		<isEqual property="opertTyCode" compareValue="DR0001">
+                           AND OPERT_GROUP_ID BETWEEN '13' AND '17'
+		</isEqual>
+		<isEqual property="opertTyCode" compareValue="DR0002">
+                           AND OPERT_GROUP_ID BETWEEN '41' AND '47'
+		</isEqual>
+		                   AND NVL (B.ERROR_AT, 'N') = 'Y') > 0
+		          THEN
+		             'fix2'
+		          WHEN (SELECT COUNT (B.UNIT_OPERT_ID)
+		                  FROM TB_DSSTR_RECOVRY_OPERT B
+		                 WHERE A.OPERT_ODR = B.OPERT_ODR
+		<isEqual property="opertTyCode" compareValue="DR0001">
+                           AND OPERT_GROUP_ID BETWEEN '13' AND '17'
+		</isEqual>
+		<isEqual property="opertTyCode" compareValue="DR0002">
+                           AND OPERT_GROUP_ID BETWEEN '41' AND '47'
+		</isEqual>
+		                   AND EXECUT_DT IS NOT NULL
+		                   AND END_DT IS NOT NULL) = A.CNT
+		          THEN
+		             'fix1'
+		          WHEN (SELECT COUNT (B.UNIT_OPERT_ID)
+		                  FROM TB_DSSTR_RECOVRY_OPERT B
+		                 WHERE A.OPERT_ODR = B.OPERT_ODR
+		<isEqual property="opertTyCode" compareValue="DR0001">
+                           AND OPERT_GROUP_ID BETWEEN '13' AND '17'
+		</isEqual>
+		<isEqual property="opertTyCode" compareValue="DR0002">
+                           AND OPERT_GROUP_ID BETWEEN '41' AND '47'
+		</isEqual>
+		                   AND EXECUT_DT IS NULL
+		                   AND END_DT IS NULL) = A.CNT
+		          THEN
+		             'fix0'		             
+		          ELSE
+		             'fix3'
+		       END
+		          OPERT_STTUS
+		  FROM (  SELECT OPERT_ODR, COUNT (*) CNT
+		            FROM TB_DSSTR_RECOVRY_OPERT
+		           WHERE OPERT_ODR = #opertOdr#
+		<isEqual property="opertTyCode" compareValue="DR0001">
+                     AND OPERT_GROUP_ID BETWEEN '13' AND '17'
+		</isEqual>
+		<isEqual property="opertTyCode" compareValue="DR0002">
+                     AND OPERT_GROUP_ID BETWEEN '41' AND '47'
+		</isEqual>
+		        GROUP BY OPERT_ODR) A
+		UNION ALL
+		SELECT '6',
+		       A.OPERT_ODR,
+		       CASE
+		          WHEN (SELECT COUNT (B.UNIT_OPERT_ID)
+		                  FROM TB_DSSTR_RECOVRY_OPERT B
+		                 WHERE A.OPERT_ODR = B.OPERT_ODR
+		<isEqual property="opertTyCode" compareValue="DR0001">
+                           AND OPERT_GROUP_ID BETWEEN '18' AND '20'
+		</isEqual>
+		<isEqual property="opertTyCode" compareValue="DR0002">
+                           AND OPERT_GROUP_ID = '48'
+		</isEqual>
+		                   AND NVL (B.ERROR_AT, 'N') = 'Y') > 0
+		          THEN
+		             'fix2'
+		          WHEN (SELECT COUNT (B.UNIT_OPERT_ID)
+		                  FROM TB_DSSTR_RECOVRY_OPERT B
+		                 WHERE A.OPERT_ODR = B.OPERT_ODR
+		<isEqual property="opertTyCode" compareValue="DR0001">
+                           AND OPERT_GROUP_ID BETWEEN '18' AND '20'
+		</isEqual>
+		<isEqual property="opertTyCode" compareValue="DR0002">
+                           AND OPERT_GROUP_ID = '48'
+		</isEqual>
+		                   AND EXECUT_DT IS NOT NULL
+		                   AND END_DT IS NOT NULL) = A.CNT
+		          THEN
+		             'fix1'
+		          WHEN (SELECT COUNT (B.UNIT_OPERT_ID)
+		                  FROM TB_DSSTR_RECOVRY_OPERT B
+		                 WHERE A.OPERT_ODR = B.OPERT_ODR
+		<isEqual property="opertTyCode" compareValue="DR0001">
+                           AND OPERT_GROUP_ID BETWEEN '18' AND '20'
+		</isEqual>
+		<isEqual property="opertTyCode" compareValue="DR0002">
+                           AND OPERT_GROUP_ID = '48'
+		</isEqual>
+		                   AND EXECUT_DT IS NULL
+		                   AND END_DT IS NULL) = A.CNT
+		          THEN
+		             'fix0'		             
+		          ELSE
+		             'fix3'
+		       END
+		          OPERT_STTUS
+		  FROM (  SELECT OPERT_ODR, COUNT (*) CNT
+		            FROM TB_DSSTR_RECOVRY_OPERT
+		           WHERE OPERT_ODR = #opertOdr#
+		<isEqual property="opertTyCode" compareValue="DR0001">
+                     AND OPERT_GROUP_ID BETWEEN '18' AND '20'
+		</isEqual>
+		<isEqual property="opertTyCode" compareValue="DR0002">
+                     AND OPERT_GROUP_ID = '48'
+		</isEqual>
+		        GROUP BY OPERT_ODR) A
+		UNION ALL
+		SELECT '7',
+		       A.OPERT_ODR,
+		       CASE
+		          WHEN (SELECT COUNT (B.UNIT_OPERT_ID)
+		                  FROM TB_DSSTR_RECOVRY_OPERT B
+		                 WHERE A.OPERT_ODR = B.OPERT_ODR
+		<isEqual property="opertTyCode" compareValue="DR0001">
+                           AND OPERT_GROUP_ID BETWEEN '21' AND '25'
+		</isEqual>
+		<isEqual property="opertTyCode" compareValue="DR0002">
+                           AND OPERT_GROUP_ID BETWEEN '49' AND '50'
+		</isEqual>
+		                   AND NVL (B.ERROR_AT, 'N') = 'Y') > 0
+		          THEN
+		             'fix2'
+		          WHEN (SELECT COUNT (B.UNIT_OPERT_ID)
+		                  FROM TB_DSSTR_RECOVRY_OPERT B
+		                 WHERE A.OPERT_ODR = B.OPERT_ODR
+		<isEqual property="opertTyCode" compareValue="DR0001">
+                           AND OPERT_GROUP_ID BETWEEN '21' AND '25'
+		</isEqual>
+		<isEqual property="opertTyCode" compareValue="DR0002">
+                           AND OPERT_GROUP_ID BETWEEN '49' AND '50'
+		</isEqual>
+		                   AND EXECUT_DT IS NOT NULL
+		                   AND END_DT IS NOT NULL) = A.CNT
+		          THEN
+		             'fix1'
+		          WHEN (SELECT COUNT (B.UNIT_OPERT_ID)
+		                  FROM TB_DSSTR_RECOVRY_OPERT B
+		                 WHERE A.OPERT_ODR = B.OPERT_ODR
+		<isEqual property="opertTyCode" compareValue="DR0001">
+                           AND OPERT_GROUP_ID BETWEEN '21' AND '25'
+		</isEqual>
+		<isEqual property="opertTyCode" compareValue="DR0002">
+                           AND OPERT_GROUP_ID BETWEEN '49' AND '50'
+		</isEqual>
+		                   AND EXECUT_DT IS NULL
+		                   AND END_DT IS NULL) = A.CNT
+		          THEN
+		             'fix0'		             
+		          ELSE
+		             'fix3'
+		       END
+		          OPERT_STTUS
+		  FROM (  SELECT OPERT_ODR, COUNT (*) CNT
+		            FROM TB_DSSTR_RECOVRY_OPERT
+		           WHERE OPERT_ODR = #opertOdr#
+		<isEqual property="opertTyCode" compareValue="DR0001">
+                     AND OPERT_GROUP_ID BETWEEN '21' AND '25'
+		</isEqual>
+		<isEqual property="opertTyCode" compareValue="DR0002">
+                     AND OPERT_GROUP_ID BETWEEN '49' AND '50'
+		</isEqual>
+		        GROUP BY OPERT_ODR) A 
+	</select>
+
+</sqlMap>

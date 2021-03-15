@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMapConfig PUBLIC "-//iBATIS.com//DTD SQL Map Config 2.0//EN"
+    "http://www.ibatis.com/dtd/sql-map-config-2.dtd">
+	
+<sqlMapConfig>
+	<typeHandler callback="org.springframework.orm.ibatis.support.ClobStringTypeHandler" jdbcType="CLOB" javaType="java.lang.String"/>
+	<sqlMap resource="egovframework/sqlmap/smbs/plymng/PlyManage_SQL_Oracle.xml"/>
+	<sqlMap resource="egovframework/sqlmap/smbs/plymng/OpertManage_SQL_Oracle.xml"/>
+	<sqlMap resource="egovframework/sqlmap/smbs/server/ServerManage_SQL_Oracle.xml"/>
+</sqlMapConfig>

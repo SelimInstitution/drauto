@@ -1,0 +1,639 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="plyManageDAO">
+
+ <typeAlias alias="HashMap" type="java.util.HashMap" /> 
+ <typeAlias alias="PlyVO" type="egovframework.ply.service.PlyVO"/>
+ 
+	<resultMap id="viewIncClob" class="HashMap">
+	  <result property="RESULT" column="RESULT" jdbcType="CLOB" javaType="java.lang.String"/>
+	</resultMap>
+
+	<resultMap id="grpList" class="HashMap">
+	  <result property="RN" column="RN"/>
+	  <result property="OPERT_GROUP_ID" column="OPERT_GROUP_ID"/>
+	  <result property="OPERT_GROUP_NM" column="OPERT_GROUP_NM"/>
+	  <result property="OPERT_GROUP_DC" column="OPERT_GROUP_DC"/>
+	  <result property="DELETE_AT" column="DELETE_AT"/>
+	  <result property="CRTR_ID" column="CRTR_ID"/>
+	  <result property="CREAT_DT" column="CREAT_DT"/>
+	  <result property="UPDUSR_ID" column="UPDUSR_ID"/>
+	  <result property="UPDT_DT" column="UPDT_DT"/>
+	</resultMap>
+
+	<resultMap id="unitList" class="HashMap">
+	  <result property="RN" column="RN"/>
+	  <result property="UNIT_OPERT_NM" column="UNIT_OPERT_NM"/>
+	  <result property="IP_ADRES" column="IP_ADRES"/>
+	  <result property="ACNT_ID" column="ACNT_ID"/> 
+	  <result property="OPERT_GROUP_EXECUT_DT" column="OPERT_GROUP_EXECUT_DT"/>
+	  <result property="EXECUT_DT" column="EXECUT_DT"/>
+	  <result property="END_DT" column="END_DT"/>	
+	  <result property="OPERT_GROUP_ID" column="OPERT_GROUP_ID"/>
+	  <result property="UNIT_OPERT_ID" column="UNIT_OPERT_ID"/>
+	  <result property="UNIT_CHK" column="UNIT_CHK"/>
+	  <result property="PRTCL_CODE" column="PRTCL_CODE"/>
+	  <result property="OPERT_CN" column="OPERT_CN"/>
+	  <result property="EXECUT_BFE_CNFIRM_AT" column="EXECUT_BFE_CNFIRM_AT"/>
+	  <result property="PRTCL_NM" 			  column="PRTCL_NM"/>
+	  <result property="OPERT_GROUP_NM" 			  column="OPERT_GROUP_NM"/>
+	</resultMap>
+
+
+
+	<select id="plyManageDAO.selectPlyManageList" parameterClass="HashMap" resultMap="viewIncClob">
+		<![CDATA[	
+			SELECT RESULT 
+			FROM TB_EXECUT_RESULT	
+			WHERE OPERT_GROUP_ID = #OPERT_GROUP_ID#
+			  AND UNIT_OPERT_ID = #UNIT_OPERT_ID#
+			  AND IP_ADRES = #IP_ADRES#
+			  AND ACNT_ID = #ACNT_ID#
+			  AND PRTCL_CODE = #PRTCL_CODE#
+			  AND USER_ID = #USER_ID#
+			  AND TO_CHAR(OPERT_GROUP_EXECUT_DT, 'YYYY-MM-DDHH24:MI:SS') = #OPERT_GROUP_EXECUT_DT#
+		]]>	  
+	</select>
+
+	<insert id="plyManageDAO.insertPlyManage" parameterClass="java.util.HashMap" >
+			INSERT INTO TB_EXECUT_RESULT (OPERT_GROUP_ID,
+			                           UNIT_OPERT_ID,
+			                           IP_ADRES,
+			                           ACNT_ID,
+			                           PRTCL_CODE,
+			                           USER_ID,
+			                           OPERT_GROUP_EXECUT_DT,
+			                           EXECUT_DT,
+			                           END_DT,
+			                           RESULT)
+			     VALUES (#OPERT_GROUP_ID#,
+			             #UNIT_OPERT_ID#,
+			             #IP_ADRES#,
+			             #ACNT_ID#,
+			             #PRTCL_CODE#,
+			             #USER_ID#,
+			             TO_DATE(#OPERT_GROUP_EXECUT_DT#, 'YYYY-MM-DDHH24:MI:SS'),
+			             TO_DATE(#EXECUT_DT#, 'YYYY-MM-DDHH24:MI:SS'),
+			             TO_DATE(#END_DT#, 'YYYY-MM-DDHH24:MI:SS'),
+			             #RESULT#
+			             )	
+	</insert>
+
+	<update id="plyManageDAO.updateEndTime" parameterClass="java.util.HashMap" >
+			UPDATE TB_EXECUT_RESULT SET
+			            END_DT = TO_DATE(#ENDTIME#,'YYYY-MM-DDHH24:MI:SS')
+			WHERE OPERT_GROUP_ID = #OPERT_GROUP_ID#
+			     AND  UNIT_OPERT_ID = #UNIT_OPERT_ID#
+			     AND IP_ADRES = #IP_ADRES#
+			     AND ACNT_ID = #ACNT_ID#
+			     AND PRTCL_CODE = #PRTCL_CODE#	
+			     AND USER_ID = #USER_ID#
+			     AND OPERT_GROUP_EXECUT_DT = TO_DATE(#OPERT_GROUP_EXECUT_DT#,'YYYY-MM-DDHH24:MI:SS')
+	</update>
+	
+	<update id="plyManageDAO.updateExecutTime" parameterClass="java.util.HashMap" >
+			UPDATE TB_EXECUT_RESULT SET
+			            EXECUT_DT = TO_DATE(#START_DT#,'YYYY-MM-DDHH24:MI:SS')
+			WHERE OPERT_GROUP_ID = #OPERT_GROUP_ID#
+			     AND  UNIT_OPERT_ID = #UNIT_OPERT_ID#
+			     AND IP_ADRES = #IP_ADRES#
+			     AND ACNT_ID = #ACNT_ID#
+			     AND PRTCL_CODE = #PRTCL_CODE#	
+			     AND USER_ID = #USER_ID#
+			     AND OPERT_GROUP_EXECUT_DT = TO_DATE(#OPERT_GROUP_EXECUT_DT#,'YYYY-MM-DDHH24:MI:SS')
+	</update>	
+	
+	<update id="plyManageDAO.updateResult" parameterClass="java.util.HashMap">
+			UPDATE TB_EXECUT_RESULT SET
+			            RESULT = RESULT || #RESULT#
+			WHERE OPERT_GROUP_ID = #OPERT_GROUP_ID#
+			     AND  UNIT_OPERT_ID = #UNIT_OPERT_ID#
+			     AND IP_ADRES = #IP_ADRES#
+			     AND ACNT_ID = #ACNT_ID#
+			     AND PRTCL_CODE = #PRTCL_CODE#	
+			     AND USER_ID = #USER_ID#
+			     AND OPERT_GROUP_EXECUT_DT = TO_DATE(#OPERT_GROUP_EXECUT_DT#,'YYYY-MM-DDHH24:MI:SS') 	
+	</update>
+	
+	<!-- 실행전 확인 결과 업데이트 -->
+	<update id="plyManageDAO.updateExecutCnfirm" parameterClass="java.util.HashMap">	
+			UPDATE TB_UNIT_OPERT SET
+			EXECUT_BFE_CNFIRM_RESULT = 'Y'
+			WHERE IP_ADRES = #IP_ADRES#
+			   AND ACNT_ID = #ACNT_ID#
+			   AND PRTCL_CODE = #PRTCL_CODE#
+			   AND OPERT_GROUP_ID = #OPERT_GROUP_ID#
+			   AND UNIT_OPERT_ID = #UNIT_OPERT_ID#	
+	</update>
+	
+	<!-- 실행전 확인 결과 플래그 값 원복 -->
+	<update id="plyManageDAO.updateUnitOpertCnfirmResult" parameterClass="java.util.HashMap">	
+			UPDATE TB_UNIT_OPERT SET
+			EXECUT_BFE_CNFIRM_RESULT = ''
+			WHERE IP_ADRES = #IP_ADRES#
+			   AND ACNT_ID = #ACNT_ID#
+			   AND PRTCL_CODE = #PRTCL_CODE#
+			   AND OPERT_GROUP_ID = #OPERT_GROUP_ID#
+			   AND UNIT_OPERT_ID = #UNIT_OPERT_ID#	
+	</update>	
+	
+	<!-- startofscript dr을 만났을때 현황 테이블에  업데이트 -->
+	<update id="plyManageDAO.updateDsstrRecovOpertExecutTime" parameterClass="java.util.HashMap">	
+			UPDATE TB_DSSTR_RECOVRY_OPERT
+			   SET EXECUT_DT = TO_DATE(#EXECUT_DT#,'YYYY-MM-DDHH24:MI:SS')
+			 WHERE     OPERT_DIV = #OPERT_DIV#
+			       AND OPERT_TY_CODE = #OPERT_TY_CODE#
+			       AND OPERT_ODR = (SELECT MAX (OPERT_ODR) OPERT_ODR
+			                          FROM TB_DSSTR_RECOVRY_OPERT
+			                         WHERE OPERT_GROUP_ID = #OPERT_GROUP_ID# 
+			                           AND UNIT_OPERT_ID = #UNIT_OPERT_ID#)
+			       AND OPERT_GROUP_ID = #OPERT_GROUP_ID#
+			       AND UNIT_OPERT_ID = #UNIT_OPERT_ID#	
+	</update>	
+	
+	<!-- endofscript를 만났을때 현황 테이블에 end_time  업데이트 -->
+	<update id="plyManageDAO.updateDsstrRecovOpertEndTime" parameterClass="java.util.HashMap">	
+			UPDATE TB_DSSTR_RECOVRY_OPERT
+			   SET END_DT = TO_DATE(#END_DT#,'YYYY-MM-DDHH24:MI:SS')
+			 WHERE     OPERT_DIV = #OPERT_DIV#
+			       AND OPERT_TY_CODE = #OPERT_TY_CODE#
+			       AND OPERT_ODR = (SELECT MAX (OPERT_ODR) OPERT_ODR
+			                          FROM TB_DSSTR_RECOVRY_OPERT
+			                         WHERE OPERT_GROUP_ID = #OPERT_GROUP_ID# 
+			                           AND UNIT_OPERT_ID = #UNIT_OPERT_ID#)
+			       AND OPERT_GROUP_ID = #OPERT_GROUP_ID#
+			       AND UNIT_OPERT_ID = #UNIT_OPERT_ID#	
+	</update>	
+	
+	<!-- processcommand.START를 만났을때 현황 테이블에  업데이트 -->
+	<update id="plyManageDAO.updateDsstrRecovOpert" parameterClass="java.util.HashMap">	
+			UPDATE $TBL_NM$
+			   SET EXECUT_DT = TO_DATE(#EXECUT_DT#,'YYYY-MM-DDHH24:MI:SS'),
+			       $COL_NM$ = #ERROR_CN#
+			 WHERE     OPERT_DIV = #OPERT_DIV#
+			       AND OPERT_TY_CODE = #OPERT_TY_CODE#
+			       AND OPERT_ODR = (SELECT MAX (OPERT_ODR) OPERT_ODR
+			                          FROM TB_DSSTR_RECOVRY_OPERT
+			                         WHERE OPERT_GROUP_ID = #OPERT_GROUP_ID# 
+			                           AND UNIT_OPERT_ID = #UNIT_OPERT_ID#)
+			       AND OPERT_GROUP_ID = #OPERT_GROUP_ID#
+			       AND UNIT_OPERT_ID = #UNIT_OPERT_ID#	
+	</update>	
+	
+	<!-- processcommand.END를 만났을때 현황 테이블에 end_time  업데이트 -->
+	<update id="plyManageDAO.updateDsstrRecovOpertPcommandEndTime" parameterClass="java.util.HashMap">	
+			UPDATE TB_DSSTR_RECOVRY_OPERT
+			   SET END_DT = TO_DATE(#END_DT#,'YYYY-MM-DDHH24:MI:SS')
+			 WHERE     OPERT_DIV = #OPERT_DIV#
+			       AND OPERT_TY_CODE = #OPERT_TY_CODE#
+			       AND OPERT_ODR = (SELECT MAX (OPERT_ODR) OPERT_ODR
+			                          FROM TB_DSSTR_RECOVRY_OPERT
+			                         WHERE OPERT_GROUP_ID = #OPERT_GROUP_ID# 
+			                           AND UNIT_OPERT_ID = #UNIT_OPERT_ID#)
+			       AND OPERT_GROUP_ID = #OPERT_GROUP_ID#
+			       AND UNIT_OPERT_ID = #UNIT_OPERT_ID#	
+	</update>	
+	
+	<!-- processcommand.ERROR를 만났을때 현황 테이블에  업데이트 -->
+	<update id="plyManageDAO.updateDsstrRecovOpertError" parameterClass="java.util.HashMap">	
+			UPDATE $TBL_NM$
+			   SET $COL_NM$ = 'Y'
+			 WHERE     OPERT_DIV = #OPERT_DIV#
+			       AND OPERT_TY_CODE = #OPERT_TY_CODE#
+			       AND OPERT_ODR = (SELECT MAX (OPERT_ODR) OPERT_ODR
+			                          FROM TB_DSSTR_RECOVRY_OPERT
+			                         WHERE OPERT_GROUP_ID = #OPERT_GROUP_ID# 
+			                           AND UNIT_OPERT_ID = #UNIT_OPERT_ID#)
+			       AND OPERT_GROUP_ID = #OPERT_GROUP_ID#
+			       AND UNIT_OPERT_ID = #UNIT_OPERT_ID#	
+	</update>	
+	
+    <resultMap id="plyVO" class="egovframework.ply.service.PlyVO">
+    	<result property="rn"     		column="RN"      				columnIndex="1"/>
+        <result property="opertGrpId"  	column="OPERT_GROUP_ID" 		columnIndex="2"/>
+        <result property="opertGrpNm"   column="OPERT_GROUP_NM" 		columnIndex="3"/>
+        <result property="opertGrpDc"  	column="OPERT_GROUP_DC" 		columnIndex="4"/>
+        <result property="deleteAt"  	column="DELETE_AT"  			columnIndex="5"/>
+        <result property="crtrId"   	column="CRTR_ID"   				columnIndex="6"/>
+        <result property="creatDt"     	column="CREAT_DT"     			columnIndex="7"/>
+        <result property="updusrId"    	column="UPDUSR_ID"    			columnIndex="8"/>
+        <result property="updtDt"  		column="UPDT_DT"  				columnIndex="9"/>
+        <result property="opertGrpKindCode"  		column="OPERT_GROUP_KIND_CODE"  columnIndex="10"/>
+    </resultMap>	
+	<select id="plyManageDAO.selectOpertGroupList" parameterClass="plyVO" resultMap="plyVO">
+	 
+       SELECT *
+       FROM (
+		       SELECT ROWNUM RN, A.*
+		       FROM(    
+		        SELECT OPERT_GROUP_ID,
+		               OPERT_GROUP_NM,
+		               OPERT_GROUP_DC,
+		               DELETE_AT,
+		               CRTR_ID,
+		               CREAT_DT,
+		               UPDUSR_ID,
+		               UPDT_DT,
+		               OPERT_GROUP_KIND_CODE
+		          FROM TB_OPERT_GROUP
+		          WHERE NVL(DELETE_AT, 'N') <![CDATA[<>]]> 'Y'
+		    <isNotEmpty prepend="AND" property="grpNm">                   
+                   OPERT_GROUP_NM LIKE '%'||#grpNm#||'%'
+            </isNotEmpty>  
+            <isNotEmpty prepend="AND" property="grpCode">     
+                   OPERT_GROUP_KIND_CODE = #grpCode#		          
+		    </isNotEmpty>      
+		          ORDER BY CREAT_DT DESC
+		          ) A  )
+		<![CDATA[
+		 WHERE RN > #firstIndex#
+		   AND RN <= #firstIndex# + #recordCountPerPage#
+		]]>		     
+		     	
+	</select>	
+	
+	<!-- 작업그룹 목록 개수를 조회한다. -->
+	<select id="plyManageDAO.selectOpertGroupListTotCnt" parameterClass="plyVO" resultClass="int">
+		SELECT COUNT(*) TOTCNT
+		FROM TB_OPERT_GROUP       
+		WHERE NVL(DELETE_AT, 'N') <![CDATA[<>]]> 'Y'
+	    <isNotEmpty prepend="AND" property="grpNm">                   
+                  OPERT_GROUP_NM LIKE '%'||#grpNm#||'%'
+           </isNotEmpty>  
+           <isNotEmpty prepend="AND" property="grpCode">     
+                  OPERT_GROUP_KIND_CODE = #grpCode#		          
+	    </isNotEmpty>		
+	</select>	
+	
+	<select id="plyManageDAO.selectUnitOpertList" parameterClass="HashMap" resultMap="unitList">
+	 <![CDATA[
+		SELECT A.OPERT_GROUP_ID,
+		       A.UNIT_OPERT_NM,
+		       A.IP_ADRES,
+		       A.ACNT_ID,
+		       A.OPERT_SN RN,
+		       A.OPERT_CN,
+		       TO_CHAR (B.OPERT_GROUP_EXECUT_DT, 'YYYY-MM-DDHH24:MI:SS') OPERT_GROUP_EXECUT_DT,
+		       TO_CHAR (B.END_DT, 'YYYY-MM-DD HH24:MI:SS') END_DT,
+		       TO_CHAR (B.EXECUT_DT, 'YYYY-MM-DD HH24:MI:SS') EXECUT_DT,
+		       A.OPERT_GROUP_ID,
+		       A.UNIT_OPERT_ID,
+		       A.UNIT_OPERT_ID AS UNIT_CHK,
+		       A.PRTCL_CODE,
+		       C.CODE_NM AS PRTCL_NM,
+		       NVL (A.EXECUT_BFE_CNFIRM_AT, 'N') AS EXECUT_BFE_CNFIRM_AT,
+		       D.OPERT_GROUP_NM
+		  FROM TB_UNIT_OPERT A, TB_EXECUT_RESULT B, 
+		       COMTCCMMNDETAILCODE C, TB_OPERT_GROUP D
+		 WHERE     A.IP_ADRES = B.IP_ADRES(+)
+		       AND A.ACNT_ID = B.ACNT_ID(+)
+		       AND A.PRTCL_CODE = B.PRTCL_CODE(+)
+		       AND A.OPERT_GROUP_ID = B.OPERT_GROUP_ID(+)
+		       AND A.UNIT_OPERT_ID = B.UNIT_OPERT_ID(+)
+		       AND C.CODE_ID(+) = 'SM0002'
+		       AND C.USE_AT(+) = 'Y'
+		       AND A.PRTCL_CODE = C.CODE(+)
+		       AND A.OPERT_GROUP_ID = D.OPERT_GROUP_ID 
+		       AND NVL(A.DELETE_AT, 'N') <> 'Y'
+		]]> 			     
+		    <isNotEmpty prepend="AND" property="OPERT_GROUP_ID">
+				A.OPERT_GROUP_ID = #OPERT_GROUP_ID#	
+			</isNotEmpty>
+		    <isNotEmpty prepend="AND" property="OPERT_GROUP_EXECUT_DT">
+				TO_CHAR (B.OPERT_GROUP_EXECUT_DT(+), 'YYYY-MM-DDHH24:MI:SS') = #OPERT_GROUP_EXECUT_DT#	
+			</isNotEmpty>			
+		ORDER BY A.OPERT_SN	
+	</select>
+	
+	<resultMap id="grpByUnitList" class="HashMap">
+	  <result property="IP_ADRES"             column="IP_ADRES"/>
+	  <result property="ACNT_ID"              column="ACNT_ID"/>
+	  <result property="PASSWORD"             column="PASSWORD"/>
+	  <result property="PRTCL_CODE"           column="PRTCL_CODE"/>
+	  <result property="PORT"                 column="PORT"/>
+	  <result property="UNIT_OPERT_ID"        column="UNIT_OPERT_ID"/>
+	  <result property="OPERT_CN"             column="OPERT_CN"/>
+	  <result property="OPERT_SN"             column="OPERT_SN"/>
+	  <result property="EXECUT_BFE_CNFIRM_AT" column="EXECUT_BFE_CNFIRM_AT"/>
+	  <result property="PROMPT" 			  column="PROMPT"/>
+	</resultMap>	
+	
+	<!-- 작업그룹 내의 모든 단위작업 조회 -->
+	<select id="plyManageDAO.selectGrpByUnitList" parameterClass="HashMap" resultMap="grpByUnitList">
+		  SELECT B.IP_ADRES,
+		         B.ACNT_ID,
+		         C.PASSWORD,
+		         B.PRTCL_CODE,
+		         TO_CHAR(C.PORT) PORT,
+		         C.PROMPT,
+		         TO_CHAR(B.UNIT_OPERT_ID) UNIT_OPERT_ID,
+		         B.OPERT_CN,
+		         TO_CHAR(B.OPERT_SN) OPERT_SN,
+		         NVL (B.EXECUT_BFE_CNFIRM_AT, 'N') AS EXECUT_BFE_CNFIRM_AT
+		    FROM TB_OPERT_GROUP A, TB_UNIT_OPERT B, TB_ACNT C
+		   WHERE A.OPERT_GROUP_ID = #OPERT_GROUP_ID#
+		     AND A.OPERT_GROUP_ID = B.OPERT_GROUP_ID
+		     AND B.IP_ADRES = C.IP_ADRES
+		     AND B.ACNT_ID = C.ACNT_ID
+		     AND B.PRTCL_CODE = C.PRTCL_CODE
+		     AND NVL (A.DELETE_AT, 'N') <![CDATA[<>]]> 'Y'
+		     AND NVL (B.DELETE_AT, 'N') <![CDATA[<>]]> 'Y'
+		     AND NVL (C.DELETE_AT, 'N') <![CDATA[<>]]> 'Y'
+		     AND B.UNIT_OPERT_ID $TYPE$ 
+				 <iterate property="UNIT_OPERT_ID" open="(" close=")" conjunction=",">
+				 		#UNIT_OPERT_ID[]#
+				 </iterate>	
+		ORDER BY B.OPERT_SN
+	</select>
+
+	<resultMap id="exeResultList" class="HashMap">
+	  <result property="EXECUT_BFE_CNFIRM_RESULT"         	   column="EXECUT_BFE_CNFIRM_RESULT"/>
+	  
+	</resultMap>
+		
+	<!-- 실행전 확인 결과 조회 -->
+	<select id="plyManageDAO.selectExeResultList" parameterClass="HashMap" resultMap="exeResultList">	
+			SELECT EXECUT_BFE_CNFIRM_RESULT
+			  FROM TB_UNIT_OPERT
+			 WHERE     IP_ADRES = #IP_ADRES#
+			       AND ACNT_ID = #ACNT_ID#
+			       AND PRTCL_CODE = #PRTCL_CODE#
+			       AND OPERT_GROUP_ID = #OPERT_GROUP_ID#
+			       AND UNIT_OPERT_ID = #UNIT_OPERT_ID#	
+	</select>	
+	
+	<resultMap id="nextUnitList" class="HashMap">
+	  <result property="NEXT_ROW"             column="NEXT_ROW"/>
+	  <result property="END_DT"               column="END_DT"/>
+	  <result property="OPERT_GROUP_ID"       column="OPERT_GROUP_ID"/>
+	</resultMap>	
+	
+	<!-- next row 조회 -->
+	<select id="plyManageDAO.selectNextrowList" parameterClass="HashMap" resultMap="nextUnitList">
+			SELECT TO_CHAR(A.NEXT_ROW) NEXT_ROW,
+			       TO_CHAR(B.END_DT, 'YYYY-MM-DD HH24:MI:SS') END_DT,
+			       A.OPERT_GROUP_ID
+			  FROM (SELECT UNIT_OPERT_ID,
+			               IP_ADRES,
+			               ACNT_ID,
+			               PRTCL_CODE,
+			               OPERT_GROUP_ID,
+			               LEAD (UNIT_OPERT_ID) OVER (ORDER BY UNIT_OPERT_ID) NEXT_ROW
+			          FROM TB_UNIT_OPERT
+			          WHERE OPERT_GROUP_ID = #OPERT_GROUP_ID#
+			          AND NVL(DELETE_AT, 'N') <![CDATA[<>]]> 'Y') A,
+			          TB_EXECUT_RESULT B
+			 WHERE A.UNIT_OPERT_ID = #UNIT_OPERT_ID#
+			     AND A.IP_ADRES = B.IP_ADRES
+			     AND A.ACNT_ID = B.ACNT_ID
+			     AND A.PRTCL_CODE = B.PRTCL_CODE
+			     AND A.OPERT_GROUP_ID = B.OPERT_GROUP_ID
+			     AND A.UNIT_OPERT_ID = B.UNIT_OPERT_ID 
+			     AND TO_CHAR (B.OPERT_GROUP_EXECUT_DT, 'YYYY-MM-DDHH24:MI:SS') = #OPERT_GROUP_EXECUT_DT#
+	</select>
+	
+	<resultMap id="nextPopList" class="HashMap">
+	  <result property="IP_ADRES"             column="IP_ADRES"/>
+	  <result property="ACNT_ID"              column="ACNT_ID"/>
+	  <result property="PRTCL_CODE"           column="PRTCL_CODE"/>
+	  <result property="PRTCL_NM"             column="PRTCL_NM"/>
+	  <result property="OPERT_GROUP_ID"       column="OPERT_GROUP_ID"/>
+	  <result property="UNIT_OPERT_ID"        column="UNIT_OPERT_ID"/>
+	  <result property="OPERT_CN"             column="OPERT_CN"/>
+	  <result property="OPERT_SN"             column="OPERT_SN"/>
+	  <result property="UNIT_OPERT_NM"        column="UNIT_OPERT_NM"/>
+	  <result property="EXECUT_BFE_CNFIRM_AT" column="EXECUT_BFE_CNFIRM_AT"/>
+	  <result property="EXECUT_DT"            column="EXECUT_DT"/>
+	  <result property="END_DT"               column="END_DT"/>
+	</resultMap>	
+	
+	<!-- next 팝업에 대한 정보를 조회 -->
+	<select id="plyManageDAO.selectNextPopList" parameterClass="HashMap" resultMap="nextPopList">
+		SELECT A.IP_ADRES,
+		         A.ACNT_ID,
+		         A.PRTCL_CODE,
+		         C.CODE_NM AS PRTCL_NM,
+		         A.OPERT_GROUP_ID,
+		         A.UNIT_OPERT_ID,
+		         A.OPERT_CN,
+		         A.OPERT_SN,
+		         A.UNIT_OPERT_NM,
+		         NVL (A.EXECUT_BFE_CNFIRM_AT, 'N') AS EXECUT_BFE_CNFIRM_AT,
+		         TO_CHAR(B.EXECUT_DT, 'YYYY-MM-DD HH24:MI:SS') EXECUT_DT,
+		         TO_CHAR(B.END_DT, 'YYYY-MM-DD HH24:MI:SS') END_DT
+		FROM TB_UNIT_OPERT A,
+		        TB_EXECUT_RESULT B,
+		        COMTCCMMNDETAILCODE C
+		 WHERE A.OPERT_GROUP_ID = #OPERT_GROUP_ID#
+		     AND A.UNIT_OPERT_ID = #NEXT_ROW#
+		     AND A.IP_ADRES = B.IP_ADRES
+		     AND A.ACNT_ID = B.ACNT_ID
+		     AND A.PRTCL_CODE = B.PRTCL_CODE
+		     AND A.OPERT_GROUP_ID = B.OPERT_GROUP_ID
+		     AND A.UNIT_OPERT_ID = B.UNIT_OPERT_ID 
+		     AND C.CODE_ID(+) = 'SM0002'
+		     AND C.USE_AT(+) = 'Y'
+		     AND NVL(A.DELETE_AT, 'N') <![CDATA[<>]]> 'Y'
+		     AND A.PRTCL_CODE = C.CODE(+)		            
+	</select>	
+
+	<resultMap id="executdt" class="HashMap">
+	  <result property="EXECUT_DT"            column="EXECUT_DT"/>
+	</resultMap>
+		
+	<!-- 실행 시작 시간을 조회 -->
+	<select id="plyManageDAO.selectSysdate" parameterClass="HashMap" resultMap="executdt">
+     SELECT TO_CHAR(SYSDATE, 'YYYY-MM-DDHH24:MI:SS') EXECUT_DT
+     FROM DUAL	
+	</select>
+	
+	<!-- 실행취소 확인을 위해 CANCL_AT 조회 -->
+	<resultMap id="cancl" class="HashMap">
+	  <result property="CANCL_AT"            column="CANCL_AT"/>
+	</resultMap>	
+	
+	<select id="plyManageDAO.selectCanclAt" parameterClass="HashMap" resultMap="cancl">
+		SELECT NVL(CANCL_AT, 'N') CANCL_AT
+		  FROM TB_EXECUT_RESULT
+		 WHERE     IP_ADRES = #IP_ADRES#
+		       AND ACNT_ID = #ACNT_ID#
+		       AND OPERT_GROUP_ID = #OPERT_GROUP_ID#
+		       AND UNIT_OPERT_ID = #UNIT_OPERT_ID#
+		       AND USER_ID = #USER_ID#
+			   AND TO_CHAR (OPERT_GROUP_EXECUT_DT, 'YYYY-MM-DDHH24:MI:SS') = #OPERT_GROUP_EXECUT_DT#		       
+	</select>
+	
+	<!-- 실행취소 여부를 업데이트 -->
+	<update id="plyManageDAO.updateCancl" parameterClass="java.util.HashMap">	
+		UPDATE TB_EXECUT_RESULT
+		   SET CANCL_AT = 'C'
+		 WHERE     IP_ADRES = #IP_ADRES#
+		       AND ACNT_ID = #ACNT_ID#
+		       AND OPERT_GROUP_ID = #OPERT_GROUP_ID#
+		       AND USER_ID = #USER_ID#
+		       AND TO_CHAR (OPERT_GROUP_EXECUT_DT, 'YYYY-MM-DDHH24:MI:SS') = #OPERT_GROUP_EXECUT_DT# 
+	</update>
+	
+	<!-- 실행취소 여부 재실행 시 플래그 값 원복 업데이트 -->
+	<update id="plyManageDAO.updateCanclRecov" parameterClass="java.util.HashMap">	
+		UPDATE TB_EXECUT_RESULT
+		   SET CANCL_AT = ''
+		 WHERE     IP_ADRES = #IP_ADRES#
+		       AND ACNT_ID = #ACNT_ID#
+		       AND PRTCL_CODE = #PRTCL_CODE#
+		       AND OPERT_GROUP_ID = #OPERT_GROUP_ID#
+		       AND USER_ID = #USER_ID#
+		       AND TO_CHAR (OPERT_GROUP_EXECUT_DT, 'YYYY-MM-DDHH24:MI:SS') = #OPERT_GROUP_EXECUT_DT# 
+	</update>	
+	
+	<!-- 팝업정보를 조회 -->
+	<resultMap id="pop" class="HashMap">
+	  <result property="OPERT_GROUP_ID"            	column="OPERT_GROUP_ID"/>
+	  <result property="OPERT_GROUP_NM"            	column="OPERT_GROUP_NM"/>
+	  <result property="UNIT_OPERT_ID"            	column="UNIT_OPERT_ID"/>
+	  <result property="UNIT_OPERT_NM"            	column="UNIT_OPERT_NM"/>
+	  <result property="IP_ADRES"            		column="IP_ADRES"/>
+	  <result property="ACNT_ID"            		column="ACNT_ID"/>
+	  <result property="PRTCL_CODE"            		column="PRTCL_CODE"/>
+	  <result property="PRTCL_NM"            		column="PRTCL_NM"/>
+	  <result property="OPERT_CN"            		column="OPERT_CN"/>
+	  <result property="OPERT_GROUP_EXECUT_DT"      column="OPERT_GROUP_EXECUT_DT"/>
+	  <result property="END_DT"            			column="END_DT"/>
+	  <result property="EXECUT_BFE_CNFIRM_AT"       column="EXECUT_BFE_CNFIRM_AT"/>
+	</resultMap>	
+	<select id="plyManageDAO.selectPopList" parameterClass="HashMap" resultMap="pop">
+		SELECT B.OPERT_GROUP_ID,
+		       A.OPERT_GROUP_NM,
+		       B.UNIT_OPERT_ID,
+		       B.UNIT_OPERT_NM,
+		       B.IP_ADRES,
+		       B.ACNT_ID,
+		       B.PRTCL_CODE,
+		       D.CODE_NM PRTCL_NM,
+		       B.OPERT_CN,
+		       TO_CHAR (C.OPERT_GROUP_EXECUT_DT, 'YYYY-MM-DDHH24:MI:SS') OPERT_GROUP_EXECUT_DT,
+		       C.END_DT,
+		       B.EXECUT_BFE_CNFIRM_AT
+		  FROM TB_OPERT_GROUP A,
+		       TB_UNIT_OPERT B,
+		       TB_EXECUT_RESULT C,
+		       COMTCCMMNDETAILCODE D
+		 WHERE     A.OPERT_GROUP_ID = B.OPERT_GROUP_ID
+		       AND B.IP_ADRES = C.IP_ADRES
+		       AND B.ACNT_ID = C.ACNT_ID
+		       AND B.PRTCL_CODE = C.PRTCL_CODE
+		       AND B.OPERT_GROUP_ID = C.OPERT_GROUP_ID
+		       AND B.UNIT_OPERT_ID = C.UNIT_OPERT_ID
+		       AND D.CODE_ID(+) = 'SM0002'
+		       AND D.USE_AT(+) = 'Y'
+		       AND B.PRTCL_CODE = D.CODE(+)
+		       AND NVL(A.DELETE_AT, 'N') <![CDATA[<>]]> 'Y'
+		       AND C.OPERT_GROUP_ID = #OPERT_GROUP_ID#
+		       AND C.UNIT_OPERT_ID = #UNIT_OPERT_ID#
+		       AND C.IP_ADRES = #IP_ADRES#
+		       AND C.ACNT_ID = #ACNT_ID#
+		       AND C.PRTCL_CODE = #PRTCL_CODE#
+		       AND C.USER_ID = #USER_ID#
+		       AND TO_CHAR (C.OPERT_GROUP_EXECUT_DT, 'YYYY-MM-DDHH24:MI:SS') = #OPERT_GROUP_EXECUT_DT#
+	</select>	
+	
+	<!-- 작업그룹 실행 일시 max값 조회 -->
+	<resultMap id="max" class="HashMap">
+	  <result property="MAX_EXECUT_DT"            	column="MAX_EXECUT_DT"/>
+	</resultMap>	
+	<select id="plyManageDAO.selectMaxExecutDt" parameterClass="HashMap" resultMap="max">
+		SELECT MAX (TO_CHAR (NVL(OPERT_GROUP_EXECUT_DT,''), 'YYYY-MM-DDHH24:MI:SS')) MAX_EXECUT_DT
+		  FROM TB_EXECUT_RESULT
+		 WHERE OPERT_GROUP_ID = #OPERT_GROUP_ID#
+	</select>
+	
+	<!-- 현재 실행상태 조회 -->
+	<select id="plyManageDAO.selectExecutCnt" parameterClass="HashMap" resultClass="int">
+		<![CDATA[
+		SELECT COUNT(*) EXECUT_CNT
+		  FROM TB_UNIT_OPERT A, TB_EXECUT_RESULT B
+		 WHERE     A.IP_ADRES = B.IP_ADRES
+		       AND A.ACNT_ID = B.ACNT_ID
+		       AND A.OPERT_GROUP_ID = B.OPERT_GROUP_ID
+		       AND A.PRTCL_CODE = B.PRTCL_CODE
+		       AND A.UNIT_OPERT_ID = B.UNIT_OPERT_ID
+		       AND B.OPERT_GROUP_ID = #OPERT_GROUP_ID#
+		       AND TO_CHAR (B.OPERT_GROUP_EXECUT_DT, 'YYYY-MM-DDHH24:MI:SS') =
+		              (SELECT MAX (
+		                         TO_CHAR (OPERT_GROUP_EXECUT_DT,
+		                                  'YYYY-MM-DDHH24:MI:SS'))
+		                         MAX_EXECUT_DT
+		                 FROM TB_EXECUT_RESULT
+		                WHERE OPERT_GROUP_ID = #OPERT_GROUP_ID#)
+		       AND NVL (B.CANCL_AT, 'N') <> 'C'
+		       AND (B.EXECUT_DT IS NULL OR B.END_DT IS NULL)
+		       AND NVL (A.DELETE_AT, 'N') <> 'Y' 			   
+		 ]]>	
+	</select>
+	
+	<select id="plyManageDAO.selectCanclAtCnt" parameterClass="HashMap" resultClass="int">
+		 <![CDATA[ 
+		SELECT COUNT(*) CANCL_CNT
+		  FROM TB_EXECUT_RESULT
+		 WHERE     OPERT_GROUP_ID = #OPERT_GROUP_ID#
+		       AND TO_CHAR (OPERT_GROUP_EXECUT_DT, 'YYYY-MM-DDHH24:MI:SS') =
+		              (SELECT MAX (
+		                         TO_CHAR (OPERT_GROUP_EXECUT_DT,
+		                                  'YYYY-MM-DDHH24:MI:SS'))
+		                         MAX_EXECUT_DT
+		                 FROM TB_EXECUT_RESULT
+		                WHERE OPERT_GROUP_ID = #OPERT_GROUP_ID#)
+		       AND NVL (CANCL_AT, 'N') = 'C'
+		       AND (EXECUT_DT IS NULL OR END_DT IS NULL)
+		 ]]>		  
+	</select>
+	
+	<!-- 작업그룹 실행 일시 실행취소의 경우 조회 -->
+	<resultMap id="opertExecutDt" class="HashMap">
+	  <result property="OPERT_GROUP_EXECUT_DT"            	column="OPERT_GROUP_EXECUT_DT"/>
+	</resultMap>	
+	<select id="plyManageDAO.selectOpertExecutDt" parameterClass="HashMap" resultMap="opertExecutDt">
+		SELECT TO_CHAR (NVL(OPERT_GROUP_EXECUT_DT, ''), 'YYYY-MM-DDHH24:MI:SS') OPERT_GROUP_EXECUT_DT
+		  FROM TB_EXECUT_RESULT
+		 WHERE     OPERT_GROUP_ID = #OPERT_GROUP_ID#
+		       AND TO_CHAR (OPERT_GROUP_EXECUT_DT, 'YYYY-MM-DDHH24:MI:SS') =
+		              (SELECT MAX (
+		                         TO_CHAR (OPERT_GROUP_EXECUT_DT,
+		                                  'YYYY-MM-DDHH24:MI:SS'))
+		                         MAX_EXECUT_DT
+		                 FROM TB_EXECUT_RESULT
+		                WHERE OPERT_GROUP_ID = #OPERT_GROUP_ID#)
+		       AND NVL (CANCL_AT, 'N') = 'C'
+		       AND (EXECUT_DT IS NULL OR END_DT IS NULL) 
+	</select>	
+	
+	<!-- DR 테이블에 ERROR_AT 'Y' 조회 -->
+	<resultMap id="errorAt" class="HashMap">
+	  <result property="ERROR_AT"            	column="ERROR_AT"/>
+	</resultMap>	
+	<select id="plyManageDAO.selectErrorAt" parameterClass="HashMap" resultMap="errorAt">
+             SELECT ERROR_AT
+             FROM     TB_DSSTR_RECOVRY_OPERT
+             WHERE     OPERT_DIV = #OPERT_DIV#
+                   AND OPERT_TY_CODE = #OPERT_TY_CODE#
+                   AND OPERT_ODR = (SELECT MAX (OPERT_ODR) OPERT_ODR
+                                      FROM TB_DSSTR_RECOVRY_OPERT
+                                     WHERE OPERT_GROUP_ID = #OPERT_GROUP_ID#
+                                       AND UNIT_OPERT_ID = #UNIT_OPERT_ID#)
+                   AND OPERT_GROUP_ID = #OPERT_GROUP_ID#
+                   AND UNIT_OPERT_ID = #UNIT_OPERT_ID# 
+	</select>	
+	
+	<!-- 작업그룹 그룹핑  조회 -->
+	<resultMap id="grCode" class="HashMap">
+	  <result property="CODE"            	column="CODE"/>
+	  <result property="CODE_NM"            column="CODE_NM"/>
+	</resultMap>		
+	<select id="plyManageDAO.selectGrCode" parameterClass="HashMap" resultMap="grCode">	
+		SELECT CODE, CODE_NM
+		  FROM COMTCCMMNDETAILCODE
+		 WHERE CODE_ID = 'SM0005'
+		   AND USE_AT = 'Y'
+	</select>	 	
+</sqlMap>

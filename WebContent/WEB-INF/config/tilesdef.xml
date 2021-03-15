@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE tiles-definitions PUBLIC 
+       "-//Apache Software Foundation//DTD Tiles Configuration 2.0//EN" 
+       "http://tiles.apache.org/dtds/tiles-config_2_0.dtd">
+
+<tiles-definitions> 
+ <definition name="base_layout" template="/WEB-INF/jsp/egovframework/com/menu_index.jsp"> 
+  <put-attribute name="header" value="/WEB-INF/jsp/egovframework/com/headG.jsp"/>
+  <put-attribute name="menu" value="/WEB-INF/jsp/egovframework/com/main_left.jsp"/>
+  <put-attribute name="body" value=""/>
+  <put-attribute name="footer" value="/WEB-INF/jsp/egovframework/com/main_bottom.jsp"/>
+ </definition>
+
+ <definition name="base_main" template="/WEB-INF/jsp/egovframework/com/EgovMainViewG.jsp"> 
+  <put-attribute name="header" value="/WEB-INF/jsp/egovframework/com/headG.jsp"/>
+  <put-attribute name="footer" value="/WEB-INF/jsp/egovframework/com/main_bottom.jsp"/>
+ </definition> 
+
+ 
+ <definition name="bbsmaster" extends="base_layout">
+    <put-attribute name="body" value="/WEB-INF/jsp/egovframework/com/cop/bbs/EgovBoardMstrList.jsp"/>
+ </definition>
+ 
+  <definition name="bbsuseinfo" extends="base_layout">
+    <put-attribute name="body" value="/WEB-INF/jsp/egovframework/com/cop/com/EgovBoardUseInfList.jsp"/>
+ </definition>
+ 
+ <definition name="logform" extends="base_layout">
+  <put-attribute name="title">로그인 페이지</put-attribute>
+  <put-attribute name="body" value="/logForm.jsp"/>
+ </definition> 
+
+</tiles-definitions>
